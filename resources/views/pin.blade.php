@@ -125,6 +125,8 @@
 
                     let paste = (event.clipboardData || window.clipboardData).getData('text');
 
+                    paste = paste.replace(/\s+/g, '');
+
                     if (isNaN(parseInt(paste)) || paste.length !== pin_length) {
                         return;
                     }
