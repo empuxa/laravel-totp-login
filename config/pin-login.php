@@ -111,7 +111,7 @@ return [
     /**
      * Enable the "superpin" feature.
      * When enabled, any user can also sign in with the PIN of your choice on non-production environments.
-     * Set the environment variable `PIN_LOGIN_SUPERPIN` to the integer PIN you want to use.
+     * Set the environment variable `PIN_LOGIN_SUPERPIN` to the PIN you want to use.
      * Default: env('PIN_LOGIN_SUPERPIN', false)
      */
     'superpin'     => env('PIN_LOGIN_SUPERPIN', false),

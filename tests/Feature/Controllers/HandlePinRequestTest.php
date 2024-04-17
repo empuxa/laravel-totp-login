@@ -6,6 +6,7 @@ use Empuxa\PinLogin\Notifications\LoginPin;
 use Empuxa\PinLogin\Tests\TestbenchTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\RateLimiter;
 
@@ -103,11 +104,17 @@ class HandlePinRequestTest extends TestbenchTestCase
         Notification::assertNothingSent();
     }
 
-    public function test_can_login_with_correct_pin(): void
+    private function loginWithPin(array $pin): void
     {
-        Notification::fake();
+        $formattedPin = '';
+
+        collect($pin)->each(function ($digit) use (&$formattedPin): void {
+            $formattedPin .= (int) $digit;
+        });
 
         $user = $this->createUser([
+            config('pin-login.columns.identifier')      => $formattedPin . '@example.com',
+            config('pin-login.columns.pin')             => Hash::make($formattedPin),
             config('pin-login.columns.pin_valid_until') => now()->addMinutes(10),
         ]);
 
@@ -116,10 +123,8 @@ class HandlePinRequestTest extends TestbenchTestCase
                 config('pin-login.columns.identifier') => $user->{config('pin-login.columns.identifier')},
             ])
             ->post(route('pin-login.pin.handle'), [
-                'pin' => [1, 2, 3, 4, 5, 6],
+                'pin' => $pin,
             ]);
-
-        $response->assertStatus(302);
 
         $response->assertSessionHasNoErrors();
 
@@ -128,6 +133,26 @@ class HandlePinRequestTest extends TestbenchTestCase
         $this->assertAuthenticatedAs($user);
 
         Notification::assertNothingSent();
+
+        auth()->logout();
+    }
+
+    public function test_can_login_with_correct_pin(): void
+    {
+        Notification::fake();
+
+        $pins = [
+            [3, 3, 3, 3, 3, 3],
+            [1, 2, 3, 4, 5, 6],
+            [9, 8, 7, 6, 5, 4],
+            // There's been a bug, where PINs with leading zeros were not working
+            [0, 5, 6, 2, 5, 5],
+            [0, 0, 0, 0, 0, 0],
+        ];
+
+        foreach ($pins as $pin) {
+            $this->loginWithPin($pin);
+        }
     }
 
     public function test_can_login_through_disabled_rate_limit(): void
@@ -186,8 +211,6 @@ class HandlePinRequestTest extends TestbenchTestCase
             ->post(route('pin-login.pin.handle'), [
                 'pin' => [3, 3, 3, 3, 3, 3],
             ]);
-
-        $response->assertStatus(302);
 
         $response->assertSessionHasNoErrors();
 

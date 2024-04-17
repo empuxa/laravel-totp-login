@@ -18,7 +18,7 @@ class PinRequest extends BaseRequest
      */
     public $user;
 
-    public ?int $formattedPin = null;
+    public ?string $formattedPin = '';
 
     public function rules(): array
     {
@@ -109,7 +109,7 @@ class PinRequest extends BaseRequest
     {
         $this->formatPin();
 
-        if ($this->formattedPin === (int) config('pin-login.superpin') && ! app()->isProduction()) {
+        if ($this->formattedPin === (string) config('pin-login.superpin') && ! app()->isProduction()) {
             return;
         }
 
