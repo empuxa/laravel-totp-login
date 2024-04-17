@@ -2,6 +2,16 @@
 
 All notable changes to `laravel-pin-login` will be documented in this file.
 
+## v3.0.1 - 2024-04-17
+
+### What's Changed
+
+* Bump aglipanci/laravel-pint-action from 2.3.1 to 2.4 by @dependabot in https://github.com/empuxa/laravel-pin-login/pull/13
+* Bump dependabot/fetch-metadata from 1.6.0 to 2.0.0 by @dependabot in https://github.com/empuxa/laravel-pin-login/pull/12
+* Fix: Impossible sign in when the PIN has a leading zero by @marcoraddatz in https://github.com/empuxa/laravel-pin-login/pull/14
+
+**Full Changelog**: https://github.com/empuxa/laravel-pin-login/compare/v3.0.0...v3.0.1
+
 ## v3.0.0 - 2024-03-15
 
 ### What's Changed
