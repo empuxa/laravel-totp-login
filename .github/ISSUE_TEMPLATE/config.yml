@@ -1,11 +1,11 @@
 blank_issues_enabled: false
 contact_links:
   - name: Ask a question
-    url: https://github.com/empuxa/laravel-pin-login/discussions/new?category=q-a
+    url: https://github.com/empuxa/laravel-totp-login/discussions/new?category=q-a
     about: Ask the community for help
   - name: Request a feature
-    url: https://github.com/empuxa/laravel-pin-login/discussions/new?category=ideas
+    url: https://github.com/empuxa/laravel-totp-login/discussions/new?category=ideas
     about: Share ideas for new features
   - name: Report a security issue
-    url: https://github.com/empuxa/laravel-pin-login/security/policy
+    url: https://github.com/empuxa/laravel-totp-login/security/policy
     about: Learn how to notify us for sensitive bugs

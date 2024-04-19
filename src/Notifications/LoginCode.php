@@ -1,6 +1,6 @@
 <?php
 
-namespace Empuxa\PinLogin\Notifications;
+namespace Empuxa\TotpLogin\Notifications;
 
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -8,7 +8,7 @@ use Illuminate\Notifications\Notification;
 /**
  * @todo test
  */
-class LoginPin extends Notification
+class LoginCode extends Notification
 {
     public function __construct(protected readonly string $pin, protected readonly string $ip)
     {
@@ -31,24 +31,24 @@ class LoginPin extends Notification
         $params = [
             'app'         => config('app.name'),
             'name'        => $notifiable->name,
-            'valid_until' => $notifiable->{config('pin-login.columns.pin_valid_until')},
-            'pin'         => $this->pin,
+            'valid_until' => $notifiable->{config('totp-login.columns.code_valid_until')},
+            'code'        => $this->code,
             'ip'          => $this->ip,
         ];
 
         return (new MailMessage)
-            ->subject(__('pin-login::notification.mail.subject', $params))
-            ->greeting(__('pin-login::notification.mail.greeting', $params))
-            ->line(__('pin-login::notification.mail.line-1', $params))
-            ->line(__('pin-login::notification.mail.line-2', $params))
-            ->line(__('pin-login::notification.mail.line-3', $params))
+            ->subject(__('totp-login::notification.mail.subject', $params))
+            ->greeting(__('totp-login::notification.mail.greeting', $params))
+            ->line(__('totp-login::notification.mail.line-1', $params))
+            ->line(__('totp-login::notification.mail.line-2', $params))
+            ->line(__('totp-login::notification.mail.line-3', $params))
             ->action(
-                __('pin-login::notification.mail.cta', $params),
-                route('pin-login.pin.form'),
+                __('totp-login::notification.mail.cta', $params),
+                route('totp-login.code.form'),
             )
-            ->markdown('pin-login::notification', [
+            ->markdown('totp-login::notification', [
                 'notifiable' => $notifiable,
-                'pin'        => str_split($this->pin),
+                'code'       => str_split($this->code),
             ]);
     }
 }

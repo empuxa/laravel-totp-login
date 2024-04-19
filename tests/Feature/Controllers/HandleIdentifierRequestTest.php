@@ -1,9 +1,9 @@
 <?php
 
-namespace Empuxa\PinLogin\Tests\Feature\Controllers;
+namespace Empuxa\TotpLogin\Tests\Feature\Controllers;
 
-use Empuxa\PinLogin\Notifications\LoginPin;
-use Empuxa\PinLogin\Tests\TestbenchTestCase;
+use Empuxa\TotpLogin\Notifications\LoginCode;
+use Empuxa\TotpLogin\Tests\TestbenchTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
@@ -19,25 +19,25 @@ class HandleIdentifierRequestTest extends TestbenchTestCase
 
         $user = $this->createUser();
 
-        $response = $this->post(route('pin-login.identifier.handle'), [
-            config('pin-login.columns.identifier') => $user->email,
+        $response = $this->post(route('totp-login.identifier.handle'), [
+            config('totp-login.columns.identifier') => $user->email,
         ]);
 
         $response->assertSessionHasNoErrors();
 
-        $response->assertRedirect(route('pin-login.pin.form'));
+        $response->assertRedirect(route('totp-login.code.form'));
 
         $this->assertGuest();
 
-        Notification::assertSentTo($user, LoginPin::class);
+        Notification::assertSentTo($user, LoginCode::class);
     }
 
     public function test_does_not_send_email_to_user_with_wrong_email(): void
     {
         Notification::fake();
 
-        $response = $this->post(route('pin-login.identifier.handle'), [
-            config('pin-login.columns.identifier') => 'not_existing@example.com',
+        $response = $this->post(route('totp-login.identifier.handle'), [
+            config('totp-login.columns.identifier') => 'not_existing@example.com',
         ]);
 
         $response->assertSessionHasErrors('email', __('auth.failed'));
@@ -49,18 +49,18 @@ class HandleIdentifierRequestTest extends TestbenchTestCase
 
     public function test_does_not_send_email_to_user_with_rate_limit(): void
     {
-        Config::set('pin-login.identifier.enable_throttling', true);
+        Config::set('totp-login.identifier.enable_throttling', true);
 
         Event::fake();
         Notification::fake();
 
-        for ($i = 0; $i < config('pin-login.identifier.max_attempts'); $i++) {
-            $this->post(route('pin-login.identifier.handle'), [
-                config('pin-login.columns.identifier') => 'non_existing@example.com',
+        for ($i = 0; $i < config('totp-login.identifier.max_attempts'); $i++) {
+            $this->post(route('totp-login.identifier.handle'), [
+                config('totp-login.columns.identifier') => 'non_existing@example.com',
             ]);
         }
 
-        $event = config('pin-login.events.lockout');
+        $event = config('totp-login.events.lockout');
         Event::assertDispatched($event);
 
         $this->assertGuest();
@@ -70,28 +70,28 @@ class HandleIdentifierRequestTest extends TestbenchTestCase
 
     public function test_sends_email_to_user_through_disabled_rate_limit(): void
     {
-        Config::set('pin-login.identifier.enable_throttling', false);
+        Config::set('totp-login.identifier.enable_throttling', false);
 
         Notification::fake();
 
         $user = $this->createUser();
 
-        for ($i = 0; $i < config('pin-login.identifier.max_attempts'); $i++) {
-            $this->post(route('pin-login.identifier.handle'), [
-                config('pin-login.columns.identifier') => 'non_existing@example.com',
+        for ($i = 0; $i < config('totp-login.identifier.max_attempts'); $i++) {
+            $this->post(route('totp-login.identifier.handle'), [
+                config('totp-login.columns.identifier') => 'non_existing@example.com',
             ]);
         }
 
-        $response = $this->post(route('pin-login.identifier.handle'), [
-            config('pin-login.columns.identifier') => $user->email,
+        $response = $this->post(route('totp-login.identifier.handle'), [
+            config('totp-login.columns.identifier') => $user->email,
         ]);
 
         $response->assertSessionHasNoErrors();
 
-        $response->assertRedirect(route('pin-login.pin.form'));
+        $response->assertRedirect(route('totp-login.code.form'));
 
         $this->assertGuest();
 
-        Notification::assertSentTo($user, LoginPin::class);
+        Notification::assertSentTo($user, LoginCode::class);
     }
 }

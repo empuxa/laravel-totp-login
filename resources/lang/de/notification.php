@@ -2,11 +2,11 @@
 
 return [
     'mail' => [
-        'subject'  => 'Your login PIN for :app',
-        'greeting' => 'Hello :name,',
-        'line-1'   => 'There was a login request from :ip. Here is your PIN, which is valid until :valid_until:',
-        'line-2'   => "If it wasn't you: no reason to panic. You can find more information about our login process here: https://google.com",
-        'line-3'   => "Thank you for using our services. If you have any questions, please contact us. We're happy to help!",
-        'cta'      => 'Sign in now',
+        'subject'  => 'Ihr Anmeldecode für :app',
+        'greeting' => 'Hallo :name,',
+        'line-1'   => 'Es gab eine Anmeldeanforderung von :ip. Hier ist Ihr Code, gültig bis :valid_until:',
+        'line-2'   => 'Falls Sie dies nicht waren: Kein Grund zur Panik. Weitere Informationen zu unserem Anmeldeverfahren finden Sie hier: https://google.com',
+        'line-3'   => 'Vielen Dank, dass Sie unsere Dienste nutzen. Bei Fragen stehen wir Ihnen gerne zur Verfügung!',
+        'cta'      => 'Jetzt anmelden',
     ],
 ];

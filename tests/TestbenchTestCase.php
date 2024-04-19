@@ -1,18 +1,19 @@
 <?php
 
-namespace Empuxa\PinLogin\Tests;
+namespace Empuxa\TotpLogin\Tests;
 
-use Empuxa\PinLogin\Models\User;
-use Empuxa\PinLogin\PinLoginServiceProvider;
+use Empuxa\TotpLogin\Models\User;
+use Empuxa\TotpLogin\TotpLoginServiceProvider;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Orchestra\Testbench\TestCase;
 
-class TestbenchTestCase extends \Orchestra\Testbench\TestCase
+class TestbenchTestCase extends TestCase
 {
     protected function getPackageProviders($app): array
     {
         return [
-            PinLoginServiceProvider::class,
+            TotpLoginServiceProvider::class,
         ];
     }
 
@@ -33,7 +34,7 @@ class TestbenchTestCase extends \Orchestra\Testbench\TestCase
             'prefix'   => '',
         ]);
 
-        $app['config']->set('pin-login.model', User::class);
+        $app['config']->set('totp-login.model', User::class);
     }
 
     /**
@@ -41,7 +42,7 @@ class TestbenchTestCase extends \Orchestra\Testbench\TestCase
      */
     protected function createUser(array $params = []): Model
     {
-        return config('pin-login.model')::create(array_merge(
+        return config('totp-login.model')::create(array_merge(
             // Default Laravel params
             [
                 'name'              => 'Test User',
@@ -52,8 +53,8 @@ class TestbenchTestCase extends \Orchestra\Testbench\TestCase
             ],
             // Default package params
             [
-                config('pin-login.columns.pin')             => '$2y$10$DJDW1ZCcd.6iqtq/JdivDuWTUCDxVES/efzv1e61CKLhdIJPupzI6', // 123456,
-                config('pin-login.columns.pin_valid_until') => now()->addSecond(),
+                config('totp-login.columns.code')             => '$2y$10$DJDW1ZCcd.6iqtq/JdivDuWTUCDxVES/efzv1e61CKLhdIJPupzI6', // 123456,
+                config('totp-login.columns.code_valid_until') => now()->addSecond(),
             ],
             // Additional test params
             $params,

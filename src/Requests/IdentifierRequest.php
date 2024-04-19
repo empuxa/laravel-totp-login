@@ -1,6 +1,6 @@
 <?php
 
-namespace Empuxa\PinLogin\Requests;
+namespace Empuxa\TotpLogin\Requests;
 
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Support\Facades\RateLimiter;
@@ -15,7 +15,7 @@ class IdentifierRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            config('pin-login.columns.identifier') => config('pin-login.identifier.validation'),
+            config('totp-login.columns.identifier') => config('totp-login.identifier.validation'),
         ];
     }
 
@@ -37,21 +37,21 @@ class IdentifierRequest extends BaseRequest
      */
     public function ensureIsNotRateLimited(): void
     {
-        if (config('pin-login.identifier.enable_throttling', true) === false) {
+        if (config('totp-login.identifier.enable_throttling', true) === false) {
             return;
         }
 
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), config('pin-login.identifier.max_attempts') - 1)) {
+        if (! RateLimiter::tooManyAttempts($this->throttleKey(), config('totp-login.identifier.max_attempts') - 1)) {
             return;
         }
 
-        $event = config('pin-login.events.lockout', Lockout::class);
+        $event = config('totp-login.events.lockout', Lockout::class);
         event(new $event($this));
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            config('pin-login.columns.identifier') => trans('auth.throttle', [
+            config('totp-login.columns.identifier') => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
@@ -70,12 +70,12 @@ class IdentifierRequest extends BaseRequest
         RateLimiter::hit($this->throttleKey());
 
         throw ValidationException::withMessages([
-            config('pin-login.columns.identifier') => __('auth.failed'),
+            config('totp-login.columns.identifier') => __('auth.failed'),
         ]);
     }
 
     public function throttleKey(): string
     {
-        return Str::lower($this->input(config('pin-login.columns.identifier'))) . '|' . $this->ip();
+        return Str::lower($this->input(config('totp-login.columns.identifier'))) . '|' . $this->ip();
     }
 }

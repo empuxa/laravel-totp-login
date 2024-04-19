@@ -5,30 +5,30 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta http-equiv="content-language" content="{{ app()->getLocale() }}">
 
-    <title>Enter your PIN</title>
+    <title>Enter your code</title>
 
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
 
     <script>
-        const pin_length = {{ config('pin-login.pin.length') }};
+        const code_length = {{ config('totp-login.code.length') }};
     </script>
 </head>
 <body class="antialiased">
 <div class="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 mx-5 space-y-6 sm:space-y-10">
     <div class="sm:mx-auto sm:w-full sm:max-w-lg space-y-3">
         <h1 class="text-center text-2xl md:text-3xl 2xl:text-4xl font-bold 2xl:leading-tight break-words whitespace-normal font-semibold text-gray-900 dark:text-white">
-            Enter your PIN
+            Enter your code
         </h1>
         <p class="text-sm text-center text-gray-600 dark:text-gray-200 max-w">
             Blabla …
         </p>
 
-        <form action="{{ route('pin-login.pin.handle') }}" method="POST">
+        <form action="{{ route('totp-login.code.handle') }}" method="POST">
             @csrf
 
-            <div class="space-y-6" role="region" aria-label="Enter PIN">
-                @error ('pin')
+            <div class="space-y-6" role="region" aria-label="Enter code">
+                @error ('code')
                     <div class="rounded-md bg-red-50 dark:bg-red-400 p-4 text-sm">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
@@ -48,15 +48,15 @@
                     </div>
                 @enderror
 
-                {{-- PIN inputs --}}
-                <div class="flex justify-center" x-data="pin()">
-                    <template x-for="(l,i) in pin_length" :key="`pin_field_${i}`">
-                        <input :id="`pin_field_${i}`"
+                {{-- Code inputs --}}
+                <div class="flex justify-center" x-data="code()">
+                    <template x-for="(l,i) in code_length" :key="`code_field_${i}`">
+                        <input :id="`code_field_${i}`"
                                :autofocus="i === 0"
-                               :aria-label="`PIN Element ${i + 1}`"
+                               :aria-label="`Code Element ${i + 1}`"
                                class="h-16 lg:h-20 w-12 lg:w-16 border border-gray-300 dark:border-gray-600 mx-1 rounded-md flex items-center text-center text-3xl lg:text-4xl text-gray-900 bg-transparent dark:text-gray-200 uppercase focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                value=""
-                               name="pin[]"
+                               name="code[]"
                                maxlength="1"
                                inputmode="numeric"
                                @keyup="stepForward(i)"
@@ -81,7 +81,7 @@
                                 @click="remember = !remember"
                         >
                             <span class="sr-only">
-                                {{ __('views/auth.pin.remember', ['days' => 30]) }}
+                                {{ __('views/auth.totp.remember', ['days' => 30]) }}
                             </span>
                             <span aria-hidden="true"
                                   :class="{ 'translate-x-0': !remember, 'translate-x-5': remember }"
@@ -108,11 +108,11 @@
         </form>
 
         <div class="text-sm flex mt-10 justify-center">
-            <form method="POST" action="{{ route('pin-login.identifier.handle') }}">
+            <form method="POST" action="{{ route('totp-login.identifier.handle') }}">
                 @csrf
-                <input type="submit" value="Resend the PIN"
+                <input type="submit" value="Resend the code"
                        class="bg-transparent cursor-pointer text-light dark:text-gray-200 hover:underline">
-                <input type="hidden" name="{{ config('pin-login.columns.identifier') }}" value="{{ ${ config('pin-login.columns.identifier') } }}">
+                <input type="hidden" name="{{ config('totp-login.columns.identifier') }}" value="{{ ${ config('totp-login.columns.identifier') } }}">
             </form>
         </div>
 
@@ -140,7 +140,7 @@
                 });
             });
 
-            function pin() {
+            function code() {
                 return {
                     resetValue(i) {
                         for (let x = 0; x < pin_length; x++) {

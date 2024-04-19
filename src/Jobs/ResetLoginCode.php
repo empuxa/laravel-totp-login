@@ -1,11 +1,11 @@
 <?php
 
-namespace Empuxa\PinLogin\Jobs;
+namespace Empuxa\TotpLogin\Jobs;
 
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class ResetLoginPin
+class ResetLoginCode
 {
     use Dispatchable;
     use SerializesModels;
@@ -19,7 +19,7 @@ class ResetLoginPin
      */
     public function handle(): void
     {
-        $this->user->{config('pin-login.columns.pin_valid_until')} = now()->subMinute();
+        $this->user->{config('totp-login.columns.code_valid_until')} = now()->subMinute();
         $this->user->saveQuietly();
     }
 }

@@ -1,17 +1,17 @@
 <?php
 
-namespace Empuxa\PinLogin\Tests\Feature\Controllers;
+namespace Empuxa\TotpLogin\Tests\Feature\Controllers;
 
-use Empuxa\PinLogin\Tests\TestbenchTestCase;
+use Empuxa\TotpLogin\Tests\TestbenchTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class ShowPinFormTest extends TestbenchTestCase
+class ShowCodeFormTest extends TestbenchTestCase
 {
     use RefreshDatabase;
 
     public function test_cannot_render_pin_screen_because_of_missing_session(): void
     {
-        $response = $this->get(route('pin-login.pin.form'));
+        $response = $this->get(route('totp-login.code.form'));
 
         $response->assertStatus(500);
     }
@@ -20,9 +20,9 @@ class ShowPinFormTest extends TestbenchTestCase
     {
         $response = $this
             ->withSession([
-                config('pin-login.columns.identifier') => 'admin@example.com',
+                config('totp-login.columns.identifier') => 'admin@example.com',
             ])
-            ->get(route('pin-login.pin.form'));
+            ->get(route('totp-login.code.form'));
 
         $response->assertStatus(200);
     }

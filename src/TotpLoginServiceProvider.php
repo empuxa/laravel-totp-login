@@ -1,18 +1,18 @@
 <?php
 
-namespace Empuxa\PinLogin;
+namespace Empuxa\TotpLogin;
 
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
-class PinLoginServiceProvider extends PackageServiceProvider
+class TotpLoginServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {
         $package
-            ->name('pin-login')
+            ->name('totp-login')
             ->hasConfigFile()
-            ->hasMigration('add_pin_columns_to_users_table')
+            ->hasMigration('add_totp_columns_to_users_table')
             ->hasTranslations()
             ->hasViews()
             ->hasRoute('web');

@@ -1,8 +1,8 @@
 <?php
 
-namespace Empuxa\PinLogin\Tests\Feature\Controllers;
+namespace Empuxa\TotpLogin\Tests\Feature\Controllers;
 
-use Empuxa\PinLogin\Tests\TestbenchTestCase;
+use Empuxa\TotpLogin\Tests\TestbenchTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ShowIdentifierFormTest extends TestbenchTestCase
@@ -11,7 +11,7 @@ class ShowIdentifierFormTest extends TestbenchTestCase
 
     public function test_can_render_login_screen(): void
     {
-        $response = $this->get(route('pin-login.identifier.form'));
+        $response = $this->get(route('totp-login.identifier.form'));
 
         $response->assertStatus(200);
     }

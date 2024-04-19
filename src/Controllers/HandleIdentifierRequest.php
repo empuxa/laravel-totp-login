@@ -1,10 +1,10 @@
 <?php
 
-namespace Empuxa\PinLogin\Controllers;
+namespace Empuxa\TotpLogin\Controllers;
 
-use Empuxa\PinLogin\Events\LoginRequestViaPin;
-use Empuxa\PinLogin\Jobs\CreateAndSendLoginPin;
-use Empuxa\PinLogin\Requests\IdentifierRequest;
+use Empuxa\TotpLogin\Events\LoginRequestViaTotp;
+use Empuxa\TotpLogin\Jobs\CreateAndSendLoginCode;
+use Empuxa\TotpLogin\Requests\IdentifierRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Controller;
 
@@ -17,19 +17,19 @@ class HandleIdentifierRequest extends Controller
     {
         $request->authenticate();
 
-        $identifierData = $request->input(config('pin-login.columns.identifier'));
+        $identifierData = $request->input(config('totp-login.columns.identifier'));
 
         $user = $request->getUserModel($identifierData);
 
-        CreateAndSendLoginPin::dispatch($user, $request->ip());
+        CreateAndSendLoginCode::dispatch($user, $request->ip());
 
         session([
-            config('pin-login.columns.identifier') => $identifierData,
+            config('totp-login.columns.identifier') => $identifierData,
         ]);
 
-        $event = config('pin-login.events.login_request_via_pin', LoginRequestViaPin::class);
+        $event = config('totp-login.events.login_request_via_totp', LoginRequestViaTotp::class);
         event(new $event($user, $request));
 
-        return redirect(route('pin-login.pin.form'));
+        return redirect(route('totp-login.code.form'));
     }
 }

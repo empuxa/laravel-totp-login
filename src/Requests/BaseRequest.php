@@ -1,6 +1,6 @@
 <?php
 
-namespace Empuxa\PinLogin\Requests;
+namespace Empuxa\TotpLogin\Requests;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
@@ -14,17 +14,17 @@ class BaseRequest extends FormRequest
 
     public function getUserModel(?string $identifier = null): ?Model
     {
-        $query = config('pin-login.model')::query();
+        $query = config('totp-login.model')::query();
 
-        // If the model has a dedicated scope for the pin login, we will use it.
-        if (method_exists(config('pin-login.model'), 'pinLoginScope')) {
-            $query = config('pin-login.model')::pinLoginScope();
+        // If the model has a dedicated scope for the TOTP login, we will use it.
+        if (method_exists(config('totp-login.model'), 'totpLoginScope')) {
+            $query = config('totp-login.model')::totpLoginScope();
         }
 
         return $query
             ->where(
-                config('pin-login.columns.identifier'),
-                $identifier ?? $this->input(config('pin-login.columns.identifier')),
+                config('totp-login.columns.identifier'),
+                $identifier ?? $this->input(config('totp-login.columns.identifier')),
             )
             ->first();
     }

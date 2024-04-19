@@ -1,6 +1,6 @@
 <?php
 
-namespace Empuxa\PinLogin\Models;
+namespace Empuxa\TotpLogin\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -22,6 +22,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
-        'pin',
+        'login_totp_code',
+        'login_totp_code_valid_until',
     ];
 }

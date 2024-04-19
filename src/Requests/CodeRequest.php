@@ -1,30 +1,30 @@
 <?php
 
-namespace Empuxa\PinLogin\Requests;
+namespace Empuxa\TotpLogin\Requests;
 
-use Empuxa\PinLogin\Exceptions\MissingPin;
-use Empuxa\PinLogin\Exceptions\MissingSessionInformation;
-use Empuxa\PinLogin\Jobs\CreateAndSendLoginPin;
+use Empuxa\TotpLogin\Exceptions\MissingCode;
+use Empuxa\TotpLogin\Exceptions\MissingSessionInformation;
+use Empuxa\TotpLogin\Jobs\CreateAndSendLoginCode;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
-class PinRequest extends BaseRequest
+class CodeRequest extends BaseRequest
 {
     /**
      * @var \Illuminate\Database\Eloquent\Model
      */
     public $user;
 
-    public ?string $formattedPin = '';
+    public ?string $formattedCode = '';
 
     public function rules(): array
     {
         return [
-            'pin'      => config('pin-login.pin.validation'),
-            'pin.*'    => 'required|numeric|digits:1',
+            'code'     => config('totp-login.code.validation'),
+            'code.*'   => 'required|numeric|digits:1',
             'remember' => [
                 'sometimes',
                 // Boolean doesn't work here since it's a fake input
@@ -39,11 +39,11 @@ class PinRequest extends BaseRequest
      */
     public function authenticate(): void
     {
-        throw_unless(session(config('pin-login.columns.identifier')), MissingSessionInformation::class);
+        throw_unless(session(config('totp-login.columns.identifier')), MissingSessionInformation::class);
 
-        throw_unless(is_array($this->pin), MissingPin::class);
+        throw_unless(is_array($this->code), MissingCode::class);
 
-        $this->user = $this->getUserModel(session(config('pin-login.columns.identifier')));
+        $this->user = $this->getUserModel(session(config('totp-login.columns.identifier')));
 
         if (is_null($this->user)) {
             return;
@@ -56,13 +56,13 @@ class PinRequest extends BaseRequest
         RateLimiter::clear($this->throttleKey());
     }
 
-    public function formatPin(): int
+    public function formatCode(): string
     {
-        collect($this->pin)->each(function ($digit): void {
-            $this->formattedPin .= (int) $digit;
+        collect($this->code)->each(function ($digit): void {
+            $this->formattedCode .= $digit;
         });
 
-        return $this->formattedPin;
+        return $this->formattedCode;
     }
 
     /**
@@ -70,16 +70,16 @@ class PinRequest extends BaseRequest
      */
     public function ensureIsNotRateLimited(): void
     {
-        if (config('pin-login.pin.enable_throttling', true) === false) {
+        if (config('totp-login.code.enable_throttling', true) === false) {
             return;
         }
 
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), config('pin-login.pin.max_attempts') - 1)) {
+        if (! RateLimiter::tooManyAttempts($this->throttleKey(), config('totp-login.code.max_attempts') - 1)) {
             return;
         }
 
         throw ValidationException::withMessages([
-            'pin' => __('pin-login::controller.handle_pin_request.error.rate_limit', [
+            'code' => __('totp-login::controller.handle_code_request.error.rate_limit', [
                 'seconds' => RateLimiter::availableIn($this->throttleKey()),
             ]),
         ]);
@@ -90,15 +90,15 @@ class PinRequest extends BaseRequest
      */
     public function ensurePinIsNotExpired(): void
     {
-        if (now() < $this->user->{config('pin-login.columns.pin_valid_until')}) {
+        if (now() < $this->user->{config('totp-login.columns.code_valid_until')}) {
             return;
         }
 
         // Send a new PIN for better UX
-        CreateAndSendLoginPin::dispatch($this->user, $this->ip());
+        CreateAndSendLoginCode::dispatch($this->user, $this->ip());
 
         throw ValidationException::withMessages([
-            'pin' => __('pin-login::controller.handle_pin_request.error.expired'),
+            'code' => __('totp-login::controller.handle_code_request.error.expired'),
         ]);
     }
 
@@ -107,21 +107,21 @@ class PinRequest extends BaseRequest
      */
     public function validatePin(): void
     {
-        $this->formatPin();
+        $this->formatCode();
 
-        if ($this->formattedPin === (string) config('pin-login.superpin') && ! app()->isProduction()) {
+        if ($this->formattedCode === (string) config('totp-login.superpin') && ! app()->isProduction()) {
             return;
         }
 
-        if (Hash::check($this->formattedPin, $this->user->{config('pin-login.columns.pin')})) {
+        if (Hash::check($this->formattedCode, $this->user->{config('totp-login.columns.code')})) {
             return;
         }
 
         RateLimiter::hit($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'pin' => __('pin-login::controller.handle_pin_request.error.wrong_pin', [
-                'attempts_left' => config('pin-login.pin.max_attempts') - RateLimiter::attempts(
+            'code' => __('totp-login::controller.handle_code_request.error.wrong_totp', [
+                'attempts_left' => config('totp-login.code.max_attempts') - RateLimiter::attempts(
                     $this->throttleKey(),
                 ),
             ]),
@@ -130,6 +130,6 @@ class PinRequest extends BaseRequest
 
     public function throttleKey(): string
     {
-        return Str::lower($this->user->{config('pin-login.columns.identifier')});
+        return Str::lower($this->user->{config('totp-login.columns.identifier')});
     }
 }

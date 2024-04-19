@@ -9,9 +9,9 @@ return [
 
     /**
      * The notification to send to the user.
-     * Default: \Empuxa\PinLogin\Notifications\LoginPin::class
+     * Default: \Empuxa\TotpLogin\Notifications\LoginCode::class
      */
-    'notification' => \Empuxa\PinLogin\Notifications\LoginPin::class,
+    'notification' => \Empuxa\TotpLogin\Notifications\LoginCode::class,
 
     'columns'      => [
         /**
@@ -19,19 +19,19 @@ return [
          * We will use this column to authenticate the user and to send the PIN to.
          * Default: 'email'
          */
-        'identifier'      => 'email',
+        'identifier'       => 'email',
 
         /**
          * The column where the PIN is stored.
-         * Default: 'login_pin'
+         * Default: 'login_totp_code'
          */
-        'pin'             => 'login_pin',
+        'code'             => 'login_totp_code',
 
         /**
          * The column where we store the information, how long the PIN is valid.
-         * Default: 'login_pin_valid_until'
+         * Default: 'login_totp_code_valid_until'
          */
-        'pin_valid_until' => 'login_pin_valid_until',
+        'code_valid_until' => 'login_totp_code_valid_until',
     ],
 
     'route'        => [
@@ -71,7 +71,7 @@ return [
         'enable_throttling' => true,
     ],
 
-    'pin'          => [
+    'code'         => [
         /**
          * The length of the PIN.
          * Keep in mind that longer PINs might break the layout.
@@ -81,7 +81,7 @@ return [
 
         /**
          * The time in seconds after which the PIN expires.
-         * This is the information being stored in the `login_pin_valid_until` column.
+         * This is the information being stored in the `login_totp_code_valid_until` column.
          * Default: 600
          */
         'expires_in'        => 600,
@@ -111,10 +111,10 @@ return [
     /**
      * Enable the "superpin" feature.
      * When enabled, any user can also sign in with the PIN of your choice on non-production environments.
-     * Set the environment variable `PIN_LOGIN_SUPERPIN` to the PIN you want to use.
-     * Default: env('PIN_LOGIN_SUPERPIN', false)
+     * Set the environment variable `TOTP_LOGIN_SUPERPIN` to the PIN you want to use.
+     * Default: env('TOTP_LOGIN_SUPERPIN', false)
      */
-    'superpin'     => env('PIN_LOGIN_SUPERPIN', false),
+    'superpin'     => env('TOTP_LOGIN_SUPERPIN', false),
 
     /**
      * The redirect path after a successful login.
@@ -124,21 +124,21 @@ return [
 
     'events'       => [
         /**
-         * This event is fired when a user submits a PIN.
-         * Default: \Empuxa\PinLogin\Events\PinRequested::class
+         * This event is fired when a user submits a TOTP.
+         * Default: \Empuxa\TotpLogin\Events\PinRequested::class
          */
-        'login_request_via_pin' => \Empuxa\PinLogin\Events\LoginRequestViaPin::class,
+        'login_request_via_totp' => \Empuxa\TotpLogin\Events\LoginRequestViaTotp::class,
 
         /**
          * This event is fired when a user was successfully logged in.
-         * Default: \Empuxa\PinLogin\Events\LoggedInViaPin::class
+         * Default: \Empuxa\TotpLogin\Events\LoggedInViaTotp::class
          */
-        'logged_in_via_pin'     => \Empuxa\PinLogin\Events\LoggedInViaPin::class,
+        'logged_in_via_totp'     => \Empuxa\TotpLogin\Events\LoggedInViaTotp::class,
 
         /**
          * This event is fired when a user was successfully logged in.
          * Default: \Illuminate\Auth\Events\Lockout::class
          */
-        'lockout'               => \Illuminate\Auth\Events\Lockout::class,
+        'lockout'                => \Illuminate\Auth\Events\Lockout::class,
     ],
 ];

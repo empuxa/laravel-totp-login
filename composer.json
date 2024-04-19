@@ -1,12 +1,12 @@
 {
-    "name": "empuxa/laravel-pin-login",
+    "name": "empuxa/laravel-totp-login",
     "description": "Say goodbye to passwords and sign in via PIN instead.",
     "keywords": [
         "empuxa",
-        "pin-login",
+        "totp-login",
         "passwordless"
     ],
-    "homepage": "https://github.com/empuxa/laravel-pin-login",
+    "homepage": "https://github.com/empuxa/laravel-totp-login",
     "license": "MIT",
     "authors": [
         {
@@ -33,12 +33,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Empuxa\\PinLogin\\": "src"
+            "Empuxa\\TotpLogin\\": "src"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Empuxa\\PinLogin\\Tests\\": "tests"
+            "Empuxa\\TotpLogin\\Tests\\": "tests"
         }
     },
     "scripts": {
@@ -55,7 +55,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Empuxa\\PinLogin\\PinLoginServiceProvider"
+                "Empuxa\\TotpLogin\\TotpLoginServiceProvider"
             ]
         }
     },

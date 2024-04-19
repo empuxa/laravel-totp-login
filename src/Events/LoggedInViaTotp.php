@@ -1,12 +1,12 @@
 <?php
 
-namespace Empuxa\PinLogin\Events;
+namespace Empuxa\TotpLogin\Events;
 
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class LoggedInViaPin
+class LoggedInViaTotp
 {
     use Dispatchable;
     use InteractsWithSockets;

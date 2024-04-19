@@ -1,15 +1,15 @@
 <?php
 
-namespace Empuxa\PinLogin\Controllers;
+namespace Empuxa\TotpLogin\Controllers;
 
-use Empuxa\PinLogin\Events\LoggedInViaPin;
-use Empuxa\PinLogin\Jobs\ResetLoginPin;
-use Empuxa\PinLogin\Requests\PinRequest;
+use Empuxa\TotpLogin\Events\LoggedInViaTotp;
+use Empuxa\TotpLogin\Jobs\ResetLoginCode;
+use Empuxa\TotpLogin\Requests\CodeRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 
-class HandlePinRequest extends Controller
+class HandleCodeRequest extends Controller
 {
     protected ?string $pin = null;
 
@@ -21,27 +21,27 @@ class HandlePinRequest extends Controller
     /**
      * @throws \Throwable
      */
-    public function __invoke(PinRequest $request): RedirectResponse
+    public function __invoke(CodeRequest $request): RedirectResponse
     {
         $request->authenticate();
 
         $request->session()->regenerate();
 
         $this->user = $request->getUserModel(
-            session(config('pin-login.columns.identifier')),
+            session(config('totp-login.columns.identifier')),
         );
 
         Auth::login($this->user, $request->input('remember') === 'true' ?? false);
 
-        ResetLoginPin::dispatch($this->user);
+        ResetLoginCode::dispatch($this->user);
 
-        $event = config('pin-login.events.logged_in_via_pin', LoggedInViaPin::class);
+        $event = config('totp-login.events.logged_in_via_totp', LoggedInViaTotp::class);
         event(new $event($this->user, $request));
 
         return redirect()
-            ->intended(config('pin-login.redirect'))
+            ->intended(config('totp-login.redirect'))
             ->with([
-                'message' => __('pin-login::controller.handle_pin_request.success'),
+                'message' => __('totp-login::controller.handle_code_request.success'),
             ]);
     }
 }

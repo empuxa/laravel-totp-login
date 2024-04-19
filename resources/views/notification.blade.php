@@ -19,6 +19,6 @@
 
 {!! $introLines[2] !!}
 
-{!! __('notification.email.salutation', [], $notifiable->locale) !!}
+{!! __('notification.email.salutation', ['app' => config('app.name')], $notifiable->locale) !!}
 
 </x-mail::message>
