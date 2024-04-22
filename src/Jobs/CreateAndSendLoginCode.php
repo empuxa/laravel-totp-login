@@ -22,7 +22,7 @@ class CreateAndSendLoginCode
     {
         $columns = config('totp-login.columns');
         $notification = config('totp-login.notification');
-        $code = self::createPin();
+        $code = self::createCode();
 
         $this->user->{$columns['code']} = Hash::make($code);
         $this->user->{$columns['code_valid_until']} = now()->addSeconds(config('totp-login.code.expires_in'));
@@ -34,7 +34,7 @@ class CreateAndSendLoginCode
     /**
      * @throws \Exception
      */
-    public static function createPin(): string
+    public static function createCode(): string
     {
         return str_pad(
             (string) random_int(0, (int) str_repeat('9', config('totp-login.code.length'))),
