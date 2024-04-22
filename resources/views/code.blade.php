@@ -11,7 +11,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <script>
-        const code_length = {{ config('totp-login.code.length') }};
+        const totp_code_length = {{ config('totp-login.code.length') }};
     </script>
 </head>
 <body class="antialiased">
@@ -50,7 +50,7 @@
 
                 {{-- Code inputs --}}
                 <div class="flex justify-center" x-data="code()">
-                    <template x-for="(l,i) in code_length" :key="`code_field_${i}`">
+                    <template x-for="(l,i) in totp_code_length" :key="`code_field_${i}`">
                         <input :id="`code_field_${i}`"
                                :autofocus="i === 0"
                                :aria-label="`Code Element ${i + 1}`"
@@ -127,12 +127,12 @@
 
                     paste = paste.replace(/\s+/g, '');
 
-                    if (isNaN(parseInt(paste)) || paste.length !== pin_length) {
+                    if (isNaN(parseInt(paste)) || paste.length !== totp_code_length) {
                         return;
                     }
 
                     for (let i = 0; i < paste.length; i++) {
-                        document.getElementById(`pin_field_${i}`).value = paste[i];
+                        document.getElementById(`code_field_${i}`).value = paste[i];
                     }
 
                     document.getElementById(`submit`).focus();
@@ -143,27 +143,27 @@
             function code() {
                 return {
                     resetValue(i) {
-                        for (let x = 0; x < pin_length; x++) {
-                            if (x >= i) document.getElementById(`pin_field_${x}`).value = '';
+                        for (let x = 0; x < totp_code_length; x++) {
+                            if (x >= i) document.getElementById(`code_field_${x}`).value = '';
                         }
                     },
 
                     stepForward(i) {
                         // Last input has been filled; there is no next input
-                        if (document.getElementById(`pin_field_${i}`).value && i === pin_length - 1) {
+                        if (document.getElementById(`code_field_${i}`).value && i === totp_code_length - 1) {
                             document.getElementById(`submit`).focus();
                             return;
                         }
 
                         // Return if the next input is already filled (conflict with paste)
-                        if (document.getElementById(`pin_field_${i + 1}`).value) {
+                        if (document.getElementById(`code_field_${i + 1}`).value) {
                             return;
                         }
 
                         // Next input is empty
-                        if (document.getElementById(`pin_field_${i}`).value && i !== pin_length - 1) {
-                            document.getElementById(`pin_field_${i + 1}`).focus();
-                            document.getElementById(`pin_field_${i + 1}`).value = '';
+                        if (document.getElementById(`code_field_${i}`).value && i !== totp_code_length - 1) {
+                            document.getElementById(`code_field_${i + 1}`).focus();
+                            document.getElementById(`code_field_${i + 1}`).value = '';
                         }
                     },
 
@@ -172,8 +172,8 @@
                             return;
                         }
 
-                        document.getElementById(`pin_field_${i - 1}`).focus();
-                        document.getElementById(`pin_field_${i - 1}`).value = '';
+                        document.getElementById(`code_field_${i - 1}`).focus();
+                        document.getElementById(`code_field_${i - 1}`).value = '';
                     }
                 }
             }
