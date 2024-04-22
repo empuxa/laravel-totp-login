@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 
 class HandleCodeRequest extends Controller
 {
-    protected ?string $pin = null;
+    protected ?string $code = null;
 
     /**
      * @var \Illuminate\Database\Eloquent\Model

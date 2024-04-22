@@ -50,8 +50,8 @@ class CodeRequest extends BaseRequest
         }
 
         $this->ensureIsNotRateLimited();
-        $this->ensurePinIsNotExpired();
-        $this->validatePin();
+        $this->ensureCodeIsNotExpired();
+        $this->validateCode();
 
         RateLimiter::clear($this->throttleKey());
     }
@@ -88,7 +88,7 @@ class CodeRequest extends BaseRequest
     /**
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function ensurePinIsNotExpired(): void
+    public function ensureCodeIsNotExpired(): void
     {
         if (now() < $this->user->{config('totp-login.columns.code_valid_until')}) {
             return;
@@ -105,7 +105,7 @@ class CodeRequest extends BaseRequest
     /**
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function validatePin(): void
+    public function validateCode(): void
     {
         $this->formatCode();
 
