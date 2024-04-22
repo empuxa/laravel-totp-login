@@ -4,7 +4,7 @@
 [![Tests](https://img.shields.io/github/actions/workflow/status/empuxa/laravel-totp-login/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/empuxa/laravel-totp-login/actions/workflows/run-tests.yml)
 [![Total Downloads](https://img.shields.io/packagist/dt/empuxa/laravel-totp-login.svg?style=flat-square)](https://packagist.org/packages/empuxa/laravel-totp-login)
 
-![Banner](https://banners.beyondco.de/Laravel%20TOTP%20Login.png?theme=light&packageManager=composer+require&packageName=empuxa%2Ftotp-login&pattern=architect&style=style_1&description=Goodbye+passwords%21&md=1&showWatermark=0&fontSize=100px&images=https%3A%2F%2Flaravel.com%2Fimg%2Flogomark.min.svg)
+![Banner](https://banners.beyondco.de/Laravel%20TOTP%20Login.png?theme=light&packageManager=composer+require&packageName=empuxa%2Flaravel-totp-login&pattern=architect&style=style_1&description=Goodbye+passwords%21&md=1&showWatermark=0&fontSize=100px&images=https%3A%2F%2Flaravel.com%2Fimg%2Flogomark.min.svg)
 
 Say goodbye to passwords and sign in via a time-based one-time password instead! 
 Laravel TOTP Login is a convenient package that allows you to easily add a TOTP login feature to your Laravel application.
