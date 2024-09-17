@@ -10,6 +10,9 @@ class HandleCodeRequestTest extends TestCase
 {
     public function test_runs_on_allowed_environment(): void
     {
+        $this->assertFalse(CodeRequest::runsOnAllowedEnvironment(''));
+        $this->assertFalse(CodeRequest::runsOnAllowedEnvironment());
+
         Config::set('totp-login.superpin.pin', 333333);
         Config::set('totp-login.superpin.environments', ['production']);
 
@@ -28,6 +31,9 @@ class HandleCodeRequestTest extends TestCase
 
     public function test_bypasses_environment(): void
     {
+        $this->assertFalse(CodeRequest::bypassesEnvironment(''));
+        $this->assertFalse(CodeRequest::bypassesEnvironment());
+
         Config::set('totp-login.superpin.pin', 333333);
         Config::set('totp-login.superpin.environments', ['non-existing']);
         Config::set('totp-login.superpin.bypassing_identifiers', ['test@example.com']);
