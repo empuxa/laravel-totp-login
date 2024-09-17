@@ -2,131 +2,135 @@
 
 return [
     /**
-     * The model to use for the login.
+     * The model used for login operations.
      * Default: \App\Models\User::class
      */
     'model'        => \App\Models\User::class,
 
     /**
-     * The notification to send to the user.
+     * The notification class used to send the login code to the user.
      * Default: \Empuxa\TotpLogin\Notifications\LoginCode::class
      */
     'notification' => \Empuxa\TotpLogin\Notifications\LoginCode::class,
 
-    'columns' => [
+    'columns'      => [
         /**
-         * The main identifier of the user model.
-         * We will use this column to authenticate the user and to send the PIN to.
+         * The column representing the primary identifier for the user model.
+         * This will be used for user authentication and to send the PIN.
          * Default: 'email'
          */
         'identifier'       => 'email',
 
         /**
-         * The column where the PIN is stored.
+         * The column where the login PIN is stored.
          * Default: 'login_totp_code'
          */
         'code'             => 'login_totp_code',
 
         /**
-         * The column where we store the information, how long the PIN is valid.
+         * The column that stores the expiration time of the PIN.
          * Default: 'login_totp_code_valid_until'
          */
         'code_valid_until' => 'login_totp_code_valid_until',
     ],
 
-    'route' => [
+    'route'        => [
         /**
-         * The middleware to use for the route.
+         * Middleware applied to the login route.
          * Default: ['web', 'guest']
          */
         'middleware' => ['web', 'guest'],
 
         /**
-         * The prefix for the route.
+         * Prefix for the login route.
          * Default: 'login'
          */
         'prefix'     => 'login',
     ],
 
-    'identifier' => [
+    'identifier'   => [
         /**
-         * The maximum number of attempts to get the user per minute.
-         * Afterward, the user gets blocked for 60 seconds.
-         * See the default Laravel RateLimiter for more information.
+         * The maximum number of attempts allowed per minute for identifying a user.
+         * After exceeding this limit, the user is blocked for 60 seconds.
+         * Refer to Laravel's RateLimiter for more details.
          * Default: 5
          */
         'max_attempts'      => 5,
 
         /**
-         * The validation rules for the email.
+         * Validation rules for the identifier, typically an email.
          * Default: 'required|string|email'
          */
         'validation'        => 'required|string|email',
 
         /**
-         * Enable throttling for the identifier request.
-         * This will block the user for 60 seconds after `max_attempts` attempts per minute.
+         * Whether to enable throttling for the identifier request.
+         * This blocks the user for 60 seconds after exceeding `max_attempts` within a minute.
          * Default: true
          */
         'enable_throttling' => true,
     ],
 
-    'code' => [
+    'code'         => [
         /**
-         * The length of the PIN.
-         * Keep in mind that longer PINs might break the layout.
+         * Length of the login PIN.
+         * Note that longer PINs may affect layout design.
          * Default: 6
          */
         'length'            => 6,
 
         /**
-         * The time in seconds after which the PIN expires.
-         * This is the information being stored in the `login_totp_code_valid_until` column.
+         * Time in seconds before the PIN expires.
+         * This duration is stored in the `login_totp_code_valid_until` column.
          * Default: 600
          */
         'expires_in'        => 600,
 
         /**
-         * The maximum number of attempts to enter a PIN per minute.
-         * Afterward, the user gets blocked for 60 seconds.
-         * See the default Laravel RateLimiter for more information.
+         * Maximum number of PIN entry attempts allowed per minute.
+         * After exceeding this limit, the user is blocked for 60 seconds.
+         * Refer to Laravel's RateLimiter for more details.
          * Default: 5
          */
         'max_attempts'      => 5,
 
         /**
-         * The validation rules for the PIN array.
+         * Validation rules for the PIN input.
          * Default: 'required|array|size:6'
          */
         'validation'        => 'required|array|size:6',
 
         /**
-         * Enable throttling for the PIN request.
-         * This will block the user for 60 seconds after `max_attempts` attempts per minute.
+         * Whether to enable throttling for PIN entry attempts.
+         * This blocks the user for 60 seconds after exceeding `max_attempts` within a minute.
          * Default: true
          */
         'enable_throttling' => true,
     ],
 
-    'superpin' => [
+    'superpin'     => [
         /**
-         * Enable the "superpin" feature.
-         * When enabled, any user can also sign in with the PIN of your choice.
-         * Set the environment variable `TOTP_LOGIN_SUPERPIN` to the PIN you want to use.
+         * Enables the "superpin" feature.
+         *
+         * When enabled, users can log in using a predefined PIN regardless of their individual login codes.
+         * To enable it, set the `TOTP_LOGIN_SUPERPIN` environment variable to a number matching the defined
+         * code length (e.g., '123456' for a 6-digit code).
+         *
+         * If `TOTP_LOGIN_SUPERPIN` is set to false, the feature is disabled.
          * Default: env('TOTP_LOGIN_SUPERPIN', false)
          */
         'pin'                   => env('TOTP_LOGIN_SUPERPIN', false),
 
         /**
-         * The environments where the superpin is allowed.
-         * This is an extra security layer to prevent the superpin from being used in production.
+         * Environments where the superpin feature is allowed.
+         * Note: The production environment is never permitted.
          * Default: ['local', 'testing']
          */
         'environments'          => ['local', 'testing'],
 
         /**
-         * The identifiers that can bypass the environment check.
-         * This is useful for testing the superpin in production or providing test accounts to vendors.
+         * Specific user identifiers that can bypass the environment check for the superpin.
+         * Useful for testing in production or providing vendor access with test accounts.
          * Default: []
          */
         'bypassing_identifiers' => [],
@@ -136,23 +140,23 @@ return [
      * The redirect path after a successful login.
      * Default: '/'
      */
-    'redirect' => '/',
+    'redirect'     => '/',
 
-    'events' => [
+    'events'       => [
         /**
-         * This event is fired when a user submits a TOTP.
-         * Default: \Empuxa\TotpLogin\Events\PinRequested::class
+         * Triggered when a user requests a TOTP login code.
+         * Default: \Empuxa\TotpLogin\Events\LoginRequestViaTotp::class
          */
         'login_request_via_totp' => \Empuxa\TotpLogin\Events\LoginRequestViaTotp::class,
 
         /**
-         * This event is fired when a user was successfully logged in.
+         * Triggered when a user successfully logs in using TOTP.
          * Default: \Empuxa\TotpLogin\Events\LoggedInViaTotp::class
          */
         'logged_in_via_totp'     => \Empuxa\TotpLogin\Events\LoggedInViaTotp::class,
 
         /**
-         * This event is fired when a user was successfully logged in.
+         * Triggered when a user is locked out after too many failed attempts.
          * Default: \Illuminate\Auth\Events\Lockout::class
          */
         'lockout'                => \Illuminate\Auth\Events\Lockout::class,
