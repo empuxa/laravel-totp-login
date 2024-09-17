@@ -102,6 +102,19 @@ class CodeRequest extends BaseRequest
         ]);
     }
 
+    public static function runsOnAllowedEnvironment(?string $environment = null): bool
+    {
+        return filled($environment)
+               && $environment !== 'production'
+               && in_array($environment, config('totp-login.superpin.environments', ['local', 'testing']), true);
+    }
+
+    public static function bypassesEnvironment(?string $identifier = null): bool
+    {
+        return filled($identifier)
+               && in_array($identifier, config('totp-login.superpin.bypassing_identifiers', []), true);
+    }
+
     /**
      * @throws \Illuminate\Validation\ValidationException
      */
@@ -109,7 +122,13 @@ class CodeRequest extends BaseRequest
     {
         $this->formatCode();
 
-        if ($this->formattedCode === (string) config('totp-login.superpin') && ! app()->isProduction()) {
+        $codeMatchesSuperPin = $this->formattedCode === (string) config('totp-login.superpin.pin', false);
+
+        if ($codeMatchesSuperPin && self::runsOnAllowedEnvironment(app()->environment())) {
+            return;
+        }
+
+        if ($codeMatchesSuperPin && self::bypassesEnvironment($this->user->{config('totp-login.columns.identifier')})) {
             return;
         }
 

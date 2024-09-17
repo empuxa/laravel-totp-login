@@ -198,9 +198,69 @@ class HandleCodeRequestTest extends TestbenchTestCase
     {
         Notification::fake();
 
-        Config::set('totp-login.superpin', 333333);
+        Config::set('totp-login.superpin.pin', 333333);
 
         $user = $this->createUser([
+            config('totp-login.columns.code_valid_until') => now()->addMinutes(10),
+        ]);
+
+        $response = $this
+            ->withSession([
+                config('totp-login.columns.identifier') => $user->{config('totp-login.columns.identifier')},
+            ])
+            ->post(route('totp-login.code.handle'), [
+                'code' => [3, 3, 3, 3, 3, 3],
+            ]);
+
+        $response->assertSessionHasNoErrors();
+
+        $response->assertRedirect(config('totp-login.redirect'));
+
+        $this->assertAuthenticatedAs($user);
+
+        Notification::assertNothingSent();
+    }
+
+    public function test_cannot_login_with_superpin_on_wrong_environment(): void
+    {
+        Notification::fake();
+
+        Config::set('totp-login.superpin.pin', 333333);
+        Config::set('totp-login.superpin.environments', ['production']);
+
+        $user = $this->createUser([
+            config('totp-login.columns.code_valid_until') => now()->addMinutes(10),
+        ]);
+
+        $response = $this
+            ->withSession([
+                config('totp-login.columns.identifier') => $user->{config('totp-login.columns.identifier')},
+            ])
+            ->post(route('totp-login.code.handle'), [
+                'code' => [3, 3, 3, 3, 3, 3],
+            ]);
+
+        $response->assertRedirect();
+
+        $response->assertSessionHasErrors('code', __('controllers/session.store.error.totp_wrong', [
+            'attempts_left' => config('totp-login.code.max_attempts') - 1,
+        ]));
+
+        $this->assertGuest();
+
+        Notification::assertNothingSent();
+    }
+
+    public function test_can_login_with_superpin_on_wrong_environment_with_bypassing_identifier(): void
+    {
+        Notification::fake();
+
+        Config::set('totp-login.superpin.pin', 333333);
+        Config::set('totp-login.superpin.environments', ['production']);
+        Config::set('totp-login.superpin.bypassing_identifiers', ['test@example.com']);
+
+        $user = $this->createUser([
+            config('totp-login.columns.identifier')       => 'test@example.com',
             config('totp-login.columns.code_valid_until') => now()->addMinutes(10),
         ]);
 

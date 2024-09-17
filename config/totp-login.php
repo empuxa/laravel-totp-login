@@ -13,7 +13,7 @@ return [
      */
     'notification' => \Empuxa\TotpLogin\Notifications\LoginCode::class,
 
-    'columns'      => [
+    'columns' => [
         /**
          * The main identifier of the user model.
          * We will use this column to authenticate the user and to send the PIN to.
@@ -34,7 +34,7 @@ return [
         'code_valid_until' => 'login_totp_code_valid_until',
     ],
 
-    'route'        => [
+    'route' => [
         /**
          * The middleware to use for the route.
          * Default: ['web', 'guest']
@@ -48,7 +48,7 @@ return [
         'prefix'     => 'login',
     ],
 
-    'identifier'   => [
+    'identifier' => [
         /**
          * The maximum number of attempts to get the user per minute.
          * Afterward, the user gets blocked for 60 seconds.
@@ -71,7 +71,7 @@ return [
         'enable_throttling' => true,
     ],
 
-    'code'         => [
+    'code' => [
         /**
          * The length of the PIN.
          * Keep in mind that longer PINs might break the layout.
@@ -108,21 +108,37 @@ return [
         'enable_throttling' => true,
     ],
 
-    /**
-     * Enable the "superpin" feature.
-     * When enabled, any user can also sign in with the PIN of your choice on non-production environments.
-     * Set the environment variable `TOTP_LOGIN_SUPERPIN` to the PIN you want to use.
-     * Default: env('TOTP_LOGIN_SUPERPIN', false)
-     */
-    'superpin'     => env('TOTP_LOGIN_SUPERPIN', false),
+    'superpin' => [
+        /**
+         * Enable the "superpin" feature.
+         * When enabled, any user can also sign in with the PIN of your choice.
+         * Set the environment variable `TOTP_LOGIN_SUPERPIN` to the PIN you want to use.
+         * Default: env('TOTP_LOGIN_SUPERPIN', false)
+         */
+        'pin'                   => env('TOTP_LOGIN_SUPERPIN', false),
+
+        /**
+         * The environments where the superpin is allowed.
+         * This is an extra security layer to prevent the superpin from being used in production.
+         * Default: ['local', 'testing']
+         */
+        'environments'          => ['local', 'testing'],
+
+        /**
+         * The identifiers that can bypass the environment check.
+         * This is useful for testing the superpin in production or providing test accounts to vendors.
+         * Default: []
+         */
+        'bypassing_identifiers' => [],
+    ],
 
     /**
      * The redirect path after a successful login.
      * Default: '/'
      */
-    'redirect'     => '/',
+    'redirect' => '/',
 
-    'events'       => [
+    'events' => [
         /**
          * This event is fired when a user submits a TOTP.
          * Default: \Empuxa\TotpLogin\Events\PinRequested::class
