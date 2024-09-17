@@ -10,9 +10,7 @@ use Illuminate\Notifications\Notification;
  */
 class LoginCode extends Notification
 {
-    public function __construct(protected readonly string $code, protected readonly string $ip)
-    {
-    }
+    public function __construct(protected readonly string $code, protected readonly string $ip) {}
 
     /**
      * @param  array<string>  $notifiable
