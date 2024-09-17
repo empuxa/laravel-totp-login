@@ -2,6 +2,25 @@
 
 All notable changes to `laravel-pin-login` will be documented in this file.
 
+## v4.0.0 - 2024-04-22
+
+The repo has been renamed from `laravel-pin-login` to `laravel-totp-login` to better describe its current login mechanism.
+
+Besides that, there were little improvements to the wording/translations and minor code improvements.
+
+### What's Changed
+
+* Change: Fixed package name by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/1
+* Change: Rename methods [BC] by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/2
+* Change: Rename variables by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/3
+* Fix: Update translation in email footer by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/4
+
+### New Contributors
+
+* @marcoraddatz made their first contribution in https://github.com/empuxa/laravel-totp-login/pull/1
+
+**Full Changelog**: https://github.com/empuxa/laravel-totp-login/compare/v3.0.1...v4.0.0
+
 ## v3.0.1 - 2024-04-17
 
 ### What's Changed
