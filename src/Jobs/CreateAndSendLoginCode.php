@@ -11,9 +11,7 @@ class CreateAndSendLoginCode
     use Dispatchable;
     use SerializesModels;
 
-    public function __construct(public $user, public readonly string $ip = '')
-    {
-    }
+    public function __construct(public $user, public readonly string $ip = '') {}
 
     /**
      * @throws \Exception
