@@ -4,6 +4,4 @@ namespace Empuxa\TotpLogin\Exceptions;
 
 use Exception;
 
-class MissingCode extends Exception
-{
-}
+class MissingCode extends Exception {}

@@ -12,7 +12,5 @@ class LoginRequestViaTotp
     use InteractsWithSockets;
     use SerializesModels;
 
-    public function __construct(public $user, public $request)
-    {
-    }
+    public function __construct(public $user, public $request) {}
 }

@@ -10,9 +10,7 @@ class ResetLoginCode
     use Dispatchable;
     use SerializesModels;
 
-    public function __construct(public $user)
-    {
-    }
+    public function __construct(public $user) {}
 
     /**
      * @throws \Exception
