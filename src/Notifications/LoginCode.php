@@ -24,14 +24,24 @@ class LoginCode extends Notification
         return ['mail'];
     }
 
+    /**
+     * This method is intended to implement your own logic to determine the user's timezone.
+     * Adjust this to avoid the user receiving wrong timestamps or adjust the texts to be less accurate.
+     */
+    public static function getUserTimeZone(mixed $notifiable): string
+    {
+        return $notifiable->timezone ?? $notifiable->tz ?? config('app.timezone', 'UTC');
+    }
+
     public function toMail(mixed $notifiable): MailMessage
     {
         $params = [
             'app'         => config('app.name'),
             'name'        => $notifiable->name,
-            'valid_until' => $notifiable->{config('totp-login.columns.code_valid_until')},
             'code'        => $this->code,
             'ip'          => $this->ip,
+            'valid_until' => $notifiable->{config('totp-login.columns.code_valid_until')}
+                ?->tz(self::getUserTimeZone($notifiable)),
         ];
 
         return (new MailMessage)
