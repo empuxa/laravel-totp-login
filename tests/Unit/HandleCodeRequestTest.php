@@ -33,10 +33,10 @@ class HandleCodeRequestTest extends TestCase
         $this->assertTrue(CodeRequest::runsOnAllowedEnvironment('staging'));
     }
 
-    public function test_bypasses_environment(): void
+    public function test_bypasses_restrictions(): void
     {
-        $this->assertFalse(CodeRequest::bypassesEnvironment(''));
-        $this->assertFalse(CodeRequest::bypassesEnvironment());
+        $this->assertFalse(CodeRequest::bypassesRestrictions(''));
+        $this->assertFalse(CodeRequest::bypassesRestrictions());
 
         Config::set('totp-login.superpin.pin', 333333);
         Config::set('totp-login.superpin.environments', ['non-existing']);
@@ -49,7 +49,7 @@ class HandleCodeRequestTest extends TestCase
         ];
 
         foreach ($data as $email => $expected) {
-            $this->assertEquals($expected, CodeRequest::bypassesEnvironment($email), $email);
+            $this->assertEquals($expected, CodeRequest::bypassesRestrictions($email), $email);
         }
     }
 }

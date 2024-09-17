@@ -109,7 +109,7 @@ class CodeRequest extends BaseRequest
                && in_array($environment, config('totp-login.superpin.environments', ['local', 'testing']), true);
     }
 
-    public static function bypassesEnvironment(?string $identifier = null): bool
+    public static function bypassesRestrictions(?string $identifier = null): bool
     {
         return filled($identifier)
                && in_array($identifier, config('totp-login.superpin.bypassing_identifiers', []), true);
@@ -128,7 +128,7 @@ class CodeRequest extends BaseRequest
             return;
         }
 
-        if ($codeMatchesSuperPin && self::bypassesEnvironment($this->user->{config('totp-login.columns.identifier')})) {
+        if ($codeMatchesSuperPin && self::bypassesRestrictions($this->user->{config('totp-login.columns.identifier')})) {
             return;
         }
 
