@@ -2,6 +2,21 @@
 
 All notable changes to `laravel-pin-login` will be documented in this file.
 
+## v5.0.0 - 2024-09-17
+
+### What's Changed
+
+* Bump dependabot/fetch-metadata from 2.0.0 to 2.2.0 by @dependabot in https://github.com/empuxa/laravel-totp-login/pull/6
+* change: wording by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/7
+* feat!: bypass superpin environment settings by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/8
+* feat: localize timestamp in notification by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/9
+
+### New Contributors
+
+* @dependabot made their first contribution in https://github.com/empuxa/laravel-totp-login/pull/6
+
+**Full Changelog**: https://github.com/empuxa/laravel-totp-login/compare/v4.0.0...v5.0.0
+
 ## v4.0.0 - 2024-04-22
 
 The repo has been renamed from `laravel-pin-login` to `laravel-totp-login` to better describe its current login mechanism.
