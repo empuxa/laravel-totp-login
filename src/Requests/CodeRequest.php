@@ -105,6 +105,7 @@ class CodeRequest extends BaseRequest
     public static function runsOnAllowedEnvironment(?string $environment = null): bool
     {
         return filled($environment)
+               && $environment !== 'production'
                && in_array($environment, config('totp-login.superpin.environments', ['local', 'testing']), true);
     }
 

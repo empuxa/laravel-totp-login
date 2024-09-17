@@ -17,7 +17,7 @@ class HandleCodeRequestTest extends TestCase
         Config::set('totp-login.superpin.environments', ['production']);
 
         $data = [
-            'production' => true,
+            'production' => false,
             'prod*'      => false,
             'staging'    => false,
             'testing'    => false,
@@ -27,6 +27,10 @@ class HandleCodeRequestTest extends TestCase
         foreach ($data as $environment => $expected) {
             $this->assertEquals($expected, CodeRequest::runsOnAllowedEnvironment($environment), $environment);
         }
+
+        Config::set('totp-login.superpin.environments', ['staging']);
+
+        $this->assertTrue(CodeRequest::runsOnAllowedEnvironment('staging'));
     }
 
     public function test_bypasses_environment(): void
