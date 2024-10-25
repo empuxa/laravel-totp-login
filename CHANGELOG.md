@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-pin-login` will be documented in this file.
 
+## v6.0.0 - 2024-10-25
+
+### What's Changed
+
+* feat!: redirect the user if there is an active session by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/10
+
+**Full Changelog**: https://github.com/empuxa/laravel-totp-login/compare/v5.0.0...v6.0.0
+
 ## v5.0.0 - 2024-09-17
 
 ### What's Changed
