@@ -4,6 +4,7 @@ namespace Empuxa\TotpLogin\Controllers;
 
 use Empuxa\TotpLogin\Exceptions\MissingSessionInformation;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Controller;
 
 class ShowCodeForm extends Controller
@@ -11,8 +12,12 @@ class ShowCodeForm extends Controller
     /**
      * @throws \Throwable
      */
-    public function __invoke(): View
+    public function __invoke(): RedirectResponse|View
     {
+        if (auth()->check()) {
+            return redirect()->intended(config('totp-login.redirect'));
+        }
+
         throw_unless(session(config('totp-login.columns.identifier')), MissingSessionInformation::class);
 
         return view('totp-login::code', [

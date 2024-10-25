@@ -2,6 +2,7 @@
 
 namespace Empuxa\TotpLogin\Tests\Feature\Controllers;
 
+use Empuxa\TotpLogin\Models\User;
 use Empuxa\TotpLogin\Tests\TestbenchTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -13,7 +14,7 @@ class ShowCodeFormTest extends TestbenchTestCase
     {
         $response = $this->get(route('totp-login.code.form'));
 
-        $response->assertStatus(500);
+        $response->assertServerError();
     }
 
     public function test_can_render_pin_screen(): void
@@ -24,6 +25,23 @@ class ShowCodeFormTest extends TestbenchTestCase
             ])
             ->get(route('totp-login.code.form'));
 
-        $response->assertStatus(200);
+        $response->assertOk();
+    }
+
+    public function test_redirects_when_already_logged_in(): void
+    {
+        $this->withoutMiddleware();
+
+        $user = User::create([
+            'name'     => 'Admin',
+            'email'    => 'admin@example.com',
+            'password' => bcrypt('password'),
+        ]);
+
+        $this->actingAs($user);
+
+        $response = $this->get(route('totp-login.code.form'));
+
+        $response->assertRedirect();
     }
 }
