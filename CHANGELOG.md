@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-pin-login` will be documented in this file.
 
+## v6.0.1 - 2024-11-16
+
+### What's Changed
+
+* fix: reduce default box size in mail to fit smaller screens by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/11
+
+**Full Changelog**: https://github.com/empuxa/laravel-totp-login/compare/v6.0.0...v6.0.1
+
 ## v6.0.0 - 2024-10-25
 
 ### What's Changed
