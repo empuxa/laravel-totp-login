@@ -2,13 +2,13 @@
 
 use Empuxa\TotpLogin\Models\User;
 
-it('cannot render pin screen because of missing session', function () {
+it('cannot render code screen because of missing session', function () {
     $response = $this->get(route('totp-login.code.form'));
 
     $response->assertServerError();
 });
 
-it('can render pin screen', function () {
+it('can render code screen', function () {
     $response = $this
         ->withSession([
             config('totp-login.columns.identifier') => 'admin@example.com',

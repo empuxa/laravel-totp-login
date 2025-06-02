@@ -2,7 +2,7 @@
 
 use Empuxa\TotpLogin\Jobs\ResetLoginCode;
 
-it('can reset the pin', function () {
+it('can reset the code', function () {
     $user = createUser([
         config('totp-login.columns.code_valid_until') => now()->addMinutes(10),
     ]);

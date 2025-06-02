@@ -12,7 +12,7 @@ it('can send notification', function () {
 
     expect($user->{config('totp-login.columns.code_valid_until')}->isFuture())->toBeFalse();
 
-    $userLoginPin = $user->{config('totp-login.columns.code')};
+    $userLoginCode = $user->{config('totp-login.columns.code')};
     $userUpdatedAt = $user->updated_at;
 
     CreateAndSendLoginCode::dispatchSync($user);
@@ -24,5 +24,5 @@ it('can send notification', function () {
     // @todo fix this assignment
     // expect($user->updated_at)->toEqual($userUpdatedAt);
 
-    expect($user->{config('totp-login.columns.code')})->not->toBe($userLoginPin);
+    expect($user->{config('totp-login.columns.code')})->not->toBe($userLoginCode);
 });
