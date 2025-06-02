@@ -2,6 +2,17 @@
 
 All notable changes to `laravel-totp-login` will be documented in this file.
 
+## v6.1.0 - 2025-06-02
+
+### What's Changed
+
+* Bump dependabot/fetch-metadata from 2.2.0 to 2.3.0 by @dependabot in https://github.com/empuxa/laravel-totp-login/pull/12
+* Bump aglipanci/laravel-pint-action from 2.4 to 2.5 by @dependabot in https://github.com/empuxa/laravel-totp-login/pull/13
+* Bump dependabot/fetch-metadata from 2.3.0 to 2.4.0 by @dependabot in https://github.com/empuxa/laravel-totp-login/pull/15
+* feat: add support for Laravel 12 and PHP 8.4 by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/16
+
+**Full Changelog**: https://github.com/empuxa/laravel-totp-login/compare/v6.0.1...v6.1.0
+
 ## v6.0.1 - 2024-11-16
 
 ### What's Changed
