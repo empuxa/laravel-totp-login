@@ -1,38 +1,28 @@
 <?php
 
-namespace Empuxa\TotpLogin\Tests\Feature\Jobs;
-
 use Empuxa\TotpLogin\Jobs\CreateAndSendLoginCode;
-use Empuxa\TotpLogin\Tests\TestbenchTestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
-class SendLoginCodeTest extends TestbenchTestCase
-{
-    use RefreshDatabase;
+it('can send notification', function () {
+    Notification::fake();
 
-    public function test_can_send_notification(): void
-    {
-        Notification::fake();
+    $user = createUser([
+        config('totp-login.columns.code_valid_until') => now(),
+    ]);
 
-        $user = $this->createUser([
-            config('totp-login.columns.code_valid_until') => now(),
-        ]);
+    expect($user->{config('totp-login.columns.code_valid_until')}->isFuture())->toBeFalse();
 
-        $this->assertFalse($user->{config('totp-login.columns.code_valid_until')}->isFuture());
+    $userLoginCode = $user->{config('totp-login.columns.code')};
+    $userUpdatedAt = $user->updated_at;
 
-        $userLoginPin = $user->{config('totp-login.columns.code')};
-        $userUpdatedAt = $user->updated_at;
+    CreateAndSendLoginCode::dispatchSync($user);
 
-        CreateAndSendLoginCode::dispatchSync($user);
+    $user->fresh();
 
-        $user->fresh();
+    expect($user->{config('totp-login.columns.code_valid_until')}->isFuture())->toBeTrue();
 
-        $this->assertTrue($user->{config('totp-login.columns.code_valid_until')}->isFuture());
+    // @todo fix this assignment
+    // expect($user->updated_at)->toEqual($userUpdatedAt);
 
-        // @todo fix this assignment
-        // $this->assertEquals($userUpdatedAt, $user->updated_at);
-
-        $this->assertNotEquals($userLoginPin, $user->{config('totp-login.columns.code')});
-    }
-}
+    expect($user->{config('totp-login.columns.code')})->not->toBe($userLoginCode);
+});

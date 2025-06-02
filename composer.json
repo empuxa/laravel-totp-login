@@ -28,8 +28,8 @@
     "require-dev": {
         "laravel/pint": "^1.10",
         "orchestra/testbench": "^7.25|^8.0|^9.0|^10.0",
-        "phpstan/phpstan": "^1.10",
-        "phpunit/phpunit": "^9.5"
+        "pestphp/pest-plugin-laravel": "^1.0|^2.0|^3.0",
+        "phpstan/phpstan": "^1.10"
     },
     "autoload": {
         "psr-4": {
@@ -43,13 +43,14 @@
     },
     "scripts": {
         "pint": "./vendor/bin/pint",
-        "test": "vendor/bin/phpunit",
-        "test-coverage": "vendor/bin/phpunit --coverage"
+        "test": "./vendor/bin/pest",
+        "test:coverage": "./vendor/bin/pest --coverage"
     },
     "config": {
         "sort-packages": true,
         "allow-plugins": {
-            "phpstan/extension-installer": true
+            "phpstan/extension-installer": true,
+            "pestphp/pest-plugin": true
         }
     },
     "extra": {

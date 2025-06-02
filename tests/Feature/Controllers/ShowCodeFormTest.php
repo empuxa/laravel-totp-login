@@ -1,47 +1,35 @@
 <?php
 
-namespace Empuxa\TotpLogin\Tests\Feature\Controllers;
-
 use Empuxa\TotpLogin\Models\User;
-use Empuxa\TotpLogin\Tests\TestbenchTestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
-class ShowCodeFormTest extends TestbenchTestCase
-{
-    use RefreshDatabase;
+it('cannot render code screen because of missing session', function () {
+    $response = $this->get(route('totp-login.code.form'));
 
-    public function test_cannot_render_pin_screen_because_of_missing_session(): void
-    {
-        $response = $this->get(route('totp-login.code.form'));
+    $response->assertServerError();
+});
 
-        $response->assertServerError();
-    }
+it('can render code screen', function () {
+    $response = $this
+        ->withSession([
+            config('totp-login.columns.identifier') => 'admin@example.com',
+        ])
+        ->get(route('totp-login.code.form'));
 
-    public function test_can_render_pin_screen(): void
-    {
-        $response = $this
-            ->withSession([
-                config('totp-login.columns.identifier') => 'admin@example.com',
-            ])
-            ->get(route('totp-login.code.form'));
+    $response->assertOk();
+});
 
-        $response->assertOk();
-    }
+it('redirects when already logged in', function () {
+    $this->withoutMiddleware();
 
-    public function test_redirects_when_already_logged_in(): void
-    {
-        $this->withoutMiddleware();
+    $user = User::create([
+        'name'     => 'Admin',
+        'email'    => 'admin@example.com',
+        'password' => bcrypt('password'),
+    ]);
 
-        $user = User::create([
-            'name'     => 'Admin',
-            'email'    => 'admin@example.com',
-            'password' => bcrypt('password'),
-        ]);
+    $this->actingAs($user);
 
-        $this->actingAs($user);
+    $response = $this->get(route('totp-login.code.form'));
 
-        $response = $this->get(route('totp-login.code.form'));
-
-        $response->assertRedirect();
-    }
-}
+    $response->assertRedirect();
+});
