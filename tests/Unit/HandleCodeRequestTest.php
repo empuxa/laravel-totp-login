@@ -1,55 +1,50 @@
 <?php
 
-namespace Empuxa\TotpLogin\Tests\Unit;
-
 use Empuxa\TotpLogin\Requests\CodeRequest;
+use Empuxa\TotpLogin\Tests\TestbenchTestCase;
 use Illuminate\Support\Facades\Config;
-use Orchestra\Testbench\TestCase;
 
-class HandleCodeRequestTest extends TestCase
-{
-    public function test_runs_on_allowed_environment(): void
-    {
-        $this->assertFalse(CodeRequest::runsOnAllowedEnvironment(''));
-        $this->assertFalse(CodeRequest::runsOnAllowedEnvironment());
+uses(TestbenchTestCase::class);
 
-        Config::set('totp-login.superpin.pin', 333333);
-        Config::set('totp-login.superpin.environments', ['production']);
+it('runs on allowed environment', function () {
+    expect(CodeRequest::runsOnAllowedEnvironment(''))->toBeFalse();
+    expect(CodeRequest::runsOnAllowedEnvironment())->toBeFalse();
 
-        $data = [
-            'production' => false,
-            'prod*'      => false,
-            'staging'    => false,
-            'testing'    => false,
-            'local'      => false,
-        ];
+    Config::set('totp-login.superpin.pin', 333333);
+    Config::set('totp-login.superpin.environments', ['production']);
 
-        foreach ($data as $environment => $expected) {
-            $this->assertSame($expected, CodeRequest::runsOnAllowedEnvironment($environment), $environment);
-        }
+    $data = [
+        'production' => false,
+        'prod*'      => false,
+        'staging'    => false,
+        'testing'    => false,
+        'local'      => false,
+    ];
 
-        Config::set('totp-login.superpin.environments', ['staging']);
-
-        $this->assertTrue(CodeRequest::runsOnAllowedEnvironment('staging'));
+    foreach ($data as $environment => $expected) {
+        expect(CodeRequest::runsOnAllowedEnvironment($environment))->toBe($expected);
     }
 
-    public function test_bypasses_restrictions(): void
-    {
-        $this->assertFalse(CodeRequest::bypassesRestrictions(''));
-        $this->assertFalse(CodeRequest::bypassesRestrictions());
+    Config::set('totp-login.superpin.environments', ['staging']);
 
-        Config::set('totp-login.superpin.pin', 333333);
-        Config::set('totp-login.superpin.environments', ['non-existing']);
-        Config::set('totp-login.superpin.bypassing_identifiers', ['test@example.com']);
+    expect(CodeRequest::runsOnAllowedEnvironment('staging'))->toBeTrue();
+});
 
-        $data = [
-            'test@example.com'  => true,
-            'test@*'            => false,
-            'test2@example.com' => false,
-        ];
+it('bypasses restrictions', function () {
+    expect(CodeRequest::bypassesRestrictions(''))->toBeFalse();
+    expect(CodeRequest::bypassesRestrictions())->toBeFalse();
 
-        foreach ($data as $email => $expected) {
-            $this->assertSame($expected, CodeRequest::bypassesRestrictions($email), $email);
-        }
+    Config::set('totp-login.superpin.pin', 333333);
+    Config::set('totp-login.superpin.environments', ['non-existing']);
+    Config::set('totp-login.superpin.bypassing_identifiers', ['test@example.com']);
+
+    $data = [
+        'test@example.com'  => true,
+        'test@*'            => false,
+        'test2@example.com' => false,
+    ];
+
+    foreach ($data as $email => $expected) {
+        expect(CodeRequest::bypassesRestrictions($email))->toBe($expected);
     }
-}
+});

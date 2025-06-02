@@ -10,3 +10,5 @@ psalm.xml
 vendor
 .php-cs-fixer.cache
 
+settings.json
+test-results

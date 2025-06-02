@@ -1,44 +1,38 @@
 <?php
 
-namespace Empuxa\TotpLogin\Tests\Feature\Controllers;
-
 use Empuxa\TotpLogin\Models\User;
 use Empuxa\TotpLogin\Tests\TestbenchTestCase;
 
-class ShowCodeFormTest extends TestbenchTestCase
-{
-    public function test_cannot_render_pin_screen_because_of_missing_session(): void
-    {
-        $response = $this->get(route('totp-login.code.form'));
+uses(TestbenchTestCase::class);
 
-        $response->assertServerError();
-    }
+it('cannot render pin screen because of missing session', function () {
+    $response = $this->get(route('totp-login.code.form'));
 
-    public function test_can_render_pin_screen(): void
-    {
-        $response = $this
-            ->withSession([
-                config('totp-login.columns.identifier') => 'admin@example.com',
-            ])
-            ->get(route('totp-login.code.form'));
+    $response->assertServerError();
+});
 
-        $response->assertOk();
-    }
+it('can render pin screen', function () {
+    $response = $this
+        ->withSession([
+            config('totp-login.columns.identifier') => 'admin@example.com',
+        ])
+        ->get(route('totp-login.code.form'));
 
-    public function test_redirects_when_already_logged_in(): void
-    {
-        $this->withoutMiddleware();
+    $response->assertOk();
+});
 
-        $user = User::create([
-            'name'     => 'Admin',
-            'email'    => 'admin@example.com',
-            'password' => bcrypt('password'),
-        ]);
+it('redirects when already logged in', function () {
+    $this->withoutMiddleware();
 
-        $this->actingAs($user);
+    $user = User::create([
+        'name'     => 'Admin',
+        'email'    => 'admin@example.com',
+        'password' => bcrypt('password'),
+    ]);
 
-        $response = $this->get(route('totp-login.code.form'));
+    $this->actingAs($user);
 
-        $response->assertRedirect();
-    }
-}
+    $response = $this->get(route('totp-login.code.form'));
+
+    $response->assertRedirect();
+});

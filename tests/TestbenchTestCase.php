@@ -47,7 +47,7 @@ class TestbenchTestCase extends TestCase
     /**
      * @param  array<int|string,mixed>  $params
      */
-    protected function createUser(array $params = []): Model
+    public function createUser(array $params = []): Model
     {
         return config('totp-login.model')::create(array_merge(
             // Default Laravel params

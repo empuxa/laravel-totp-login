@@ -1,29 +1,25 @@
 <?php
 
-namespace Empuxa\TotpLogin\Tests\Feature\Jobs;
-
 use Empuxa\TotpLogin\Jobs\ResetLoginCode;
 use Empuxa\TotpLogin\Tests\TestbenchTestCase;
 
-class ResetLoginCodeTest extends TestbenchTestCase
-{
-    public function test_can_reset_the_pin(): void
-    {
-        $user = $this->createUser([
-            config('totp-login.columns.code_valid_until') => now()->addMinutes(10),
-        ]);
+uses(TestbenchTestCase::class);
 
-        $userUpdatedAt = $user->updated_at;
+it('can reset the pin', function () {
+    $user = createUser([
+        config('totp-login.columns.code_valid_until') => now()->addMinutes(10),
+    ]);
 
-        $this->assertTrue($user->{config('totp-login.columns.code_valid_until')}->isFuture());
+    $userUpdatedAt = $user->updated_at;
 
-        ResetLoginCode::dispatchSync($user);
+    expect($user->{config('totp-login.columns.code_valid_until')}->isFuture())->toBeTrue();
 
-        $user->fresh();
+    ResetLoginCode::dispatchSync($user);
 
-        $this->assertFalse($user->{config('totp-login.columns.code_valid_until')}->isFuture());
+    $user->fresh();
 
-        // Timestamps have not been updated
-        $this->assertEquals($userUpdatedAt, $user->updated_at);
-    }
-}
+    expect($user->{config('totp-login.columns.code_valid_until')}->isFuture())->toBeFalse();
+
+    // Timestamps have not been updated
+    expect($user->updated_at)->toEqual($userUpdatedAt);
+});

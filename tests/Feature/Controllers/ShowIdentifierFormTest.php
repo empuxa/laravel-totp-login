@@ -1,33 +1,28 @@
 <?php
 
-namespace Empuxa\TotpLogin\Tests\Feature\Controllers;
-
 use Empuxa\TotpLogin\Models\User;
 use Empuxa\TotpLogin\Tests\TestbenchTestCase;
 
-class ShowIdentifierFormTest extends TestbenchTestCase
-{
-    public function test_can_render_login_screen(): void
-    {
-        $response = $this->get(route('totp-login.identifier.form'));
+uses(TestbenchTestCase::class);
 
-        $response->assertOk();
-    }
+it('can render login screen', function () {
+    $response = $this->get(route('totp-login.identifier.form'));
 
-    public function test_redirects_when_already_logged_in(): void
-    {
-        $this->withoutMiddleware();
+    $response->assertOk();
+});
 
-        $user = User::create([
-            'name'     => 'Admin',
-            'email'    => 'admin@example.com',
-            'password' => bcrypt('password'),
-        ]);
+it('redirects when already logged in', function () {
+    $this->withoutMiddleware();
 
-        $this->actingAs($user);
+    $user = User::create([
+        'name'     => 'Admin',
+        'email'    => 'admin@example.com',
+        'password' => bcrypt('password'),
+    ]);
 
-        $response = $this->get(route('totp-login.identifier.form'));
+    $this->actingAs($user);
 
-        $response->assertRedirect();
-    }
-}
+    $response = $this->get(route('totp-login.identifier.form'));
+
+    $response->assertRedirect();
+});
