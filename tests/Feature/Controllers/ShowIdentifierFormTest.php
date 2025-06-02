@@ -1,9 +1,6 @@
 <?php
 
 use Empuxa\TotpLogin\Models\User;
-use Empuxa\TotpLogin\Tests\TestbenchTestCase;
-
-uses(TestbenchTestCase::class);
 
 it('can render login screen', function () {
     $response = $this->get(route('totp-login.identifier.form'));

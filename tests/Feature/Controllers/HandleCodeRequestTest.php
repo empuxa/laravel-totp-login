@@ -1,21 +1,11 @@
 <?php
 
-use Empuxa\TotpLogin\Models\User;
 use Empuxa\TotpLogin\Notifications\LoginCode;
-use Empuxa\TotpLogin\Tests\TestbenchTestCase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\RateLimiter;
-
-uses(TestbenchTestCase::class);
-
-// Helper function for creating a user in tests
-function createUser(array $attributes = []): User
-{
-    return test()->createUser($attributes);
-}
 
 it('cannot login with wrong code', function () {
     Notification::fake();

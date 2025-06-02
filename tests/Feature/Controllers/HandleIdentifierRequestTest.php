@@ -1,13 +1,10 @@
 <?php
 
 use Empuxa\TotpLogin\Notifications\LoginCode;
-use Empuxa\TotpLogin\Tests\TestbenchTestCase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
-
-uses(TestbenchTestCase::class);
 
 it('sends email to user', function () {
     Notification::fake();

@@ -1,9 +1,6 @@
 <?php
 
 use Empuxa\TotpLogin\Models\User;
-use Empuxa\TotpLogin\Tests\TestbenchTestCase;
-
-uses(TestbenchTestCase::class);
 
 it('cannot render pin screen because of missing session', function () {
     $response = $this->get(route('totp-login.code.form'));

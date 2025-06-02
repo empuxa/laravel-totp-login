@@ -1,10 +1,7 @@
 <?php
 
 use Empuxa\TotpLogin\Requests\CodeRequest;
-use Empuxa\TotpLogin\Tests\TestbenchTestCase;
 use Illuminate\Support\Facades\Config;
-
-uses(TestbenchTestCase::class);
 
 it('runs on allowed environment', function () {
     expect(CodeRequest::runsOnAllowedEnvironment(''))->toBeFalse();

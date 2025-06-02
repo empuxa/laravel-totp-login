@@ -1,9 +1,6 @@
 <?php
 
 use Empuxa\TotpLogin\Jobs\ResetLoginCode;
-use Empuxa\TotpLogin\Tests\TestbenchTestCase;
-
-uses(TestbenchTestCase::class);
 
 it('can reset the pin', function () {
     $user = createUser([

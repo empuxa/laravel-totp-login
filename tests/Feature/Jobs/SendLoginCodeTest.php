@@ -1,10 +1,7 @@
 <?php
 
 use Empuxa\TotpLogin\Jobs\CreateAndSendLoginCode;
-use Empuxa\TotpLogin\Tests\TestbenchTestCase;
 use Illuminate\Support\Facades\Notification;
-
-uses(TestbenchTestCase::class);
 
 it('can send notification', function () {
     Notification::fake();

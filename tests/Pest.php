@@ -11,9 +11,10 @@
 |
 */
 
-use Empuxa\TotpLogin\Tests\TestbenchTestCase;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
-uses(TestbenchTestCase::class)->in('Feature', 'Unit');
+uses(\Empuxa\TotpLogin\Tests\TestbenchTestCase::class)->in('Feature', 'Unit');
 
 /*
 |--------------------------------------------------------------------------
@@ -41,7 +42,26 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function createUser(array $attributes = []): \Empuxa\TotpLogin\Models\User
+/**
+ * @param  array<int|string,mixed>  $params
+ */
+function createUser(array $params = []): Model
 {
-    return test()->createUser($attributes);
+    return config('totp-login.model')::create(array_merge(
+        // Default Laravel params
+        [
+            'name'              => 'Test User',
+            'email'             => 'user@example.com',
+            'email_verified_at' => now(),
+            'password'          => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+            'remember_token'    => Str::random(10),
+        ],
+        // Default package params
+        [
+            config('totp-login.columns.code')             => '$2y$10$DJDW1ZCcd.6iqtq/JdivDuWTUCDxVES/efzv1e61CKLhdIJPupzI6', // 123456,
+            config('totp-login.columns.code_valid_until') => now()->addSecond(),
+        ],
+        // Additional test params
+        $params,
+    ));
 }
