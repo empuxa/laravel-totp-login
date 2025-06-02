@@ -4,7 +4,7 @@ namespace Empuxa\TotpLogin\Tests\Feature\Controllers;
 
 use Empuxa\TotpLogin\Notifications\LoginCode;
 use Empuxa\TotpLogin\Tests\TestbenchTestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -12,8 +12,6 @@ use Illuminate\Support\Facades\RateLimiter;
 
 class HandleCodeRequestTest extends TestbenchTestCase
 {
-    use RefreshDatabase;
-
     public function test_cannot_login_with_wrong_code(): void
     {
         Notification::fake();
@@ -134,7 +132,7 @@ class HandleCodeRequestTest extends TestbenchTestCase
 
         Notification::assertNothingSent();
 
-        auth()->logout();
+        Auth::logout();
     }
 
     public function test_can_login_with_correct_code(): void

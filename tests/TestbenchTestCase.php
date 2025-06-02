@@ -5,6 +5,7 @@ namespace Empuxa\TotpLogin\Tests;
 use Empuxa\TotpLogin\Models\User;
 use Empuxa\TotpLogin\TotpLoginServiceProvider;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Orchestra\Testbench\TestCase;
 
@@ -17,21 +18,28 @@ class TestbenchTestCase extends TestCase
         ];
     }
 
-    protected function defineDatabaseMigrations()
+    protected function defineDatabaseMigrations(): void
     {
-        $this->loadLaravelMigrations();
+        $this->loadLaravelMigrations([
+            '--database' => 'testbench'
+        ]);
 
-        $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+        $this->loadMigrationsFrom([
+            '--database' => 'testbench',
+            '--path'     => __DIR__ . '/../database/migrations',
+            '--realpath' => true,
+        ]);
     }
 
-    protected function defineEnvironment($app)
+    protected function defineEnvironment($app): void
     {
-        // Setup default database to use sqlite :memory:
         $app['config']->set('database.default', 'testbench');
+
         $app['config']->set('database.connections.testbench', [
-            'driver'   => 'sqlite',
-            'database' => ':memory:',
-            'prefix'   => '',
+            'driver'                  => 'sqlite',
+            'database'                => ':memory:',
+            'prefix'                  => '',
+            'foreign_key_constraints' => true,
         ]);
 
         $app['config']->set('totp-login.model', User::class);

@@ -4,15 +4,12 @@ namespace Empuxa\TotpLogin\Tests\Feature\Controllers;
 
 use Empuxa\TotpLogin\Notifications\LoginCode;
 use Empuxa\TotpLogin\Tests\TestbenchTestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Notification;
 
 class HandleIdentifierRequestTest extends TestbenchTestCase
 {
-    use RefreshDatabase;
-
     public function test_sends_email_to_user(): void
     {
         Notification::fake();

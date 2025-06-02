@@ -4,12 +4,9 @@ namespace Empuxa\TotpLogin\Tests\Feature\Jobs;
 
 use Empuxa\TotpLogin\Jobs\ResetLoginCode;
 use Empuxa\TotpLogin\Tests\TestbenchTestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class ResetLoginCodeTest extends TestbenchTestCase
 {
-    use RefreshDatabase;
-
     public function test_can_reset_the_pin(): void
     {
         $user = $this->createUser([

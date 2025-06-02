@@ -34,4 +34,6 @@ jobs:
         run: composer update --${{ matrix.stability }} --prefer-dist --no-interaction
 
       - name: Execute tests
+        env:
+          XDEBUG_MODE: coverage
         run: vendor/bin/phpunit
