@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `laravel-pin-login` will be documented in this file.
+All notable changes to `laravel-totp-login` will be documented in this file.
 
 ## v6.0.1 - 2024-11-16
 
