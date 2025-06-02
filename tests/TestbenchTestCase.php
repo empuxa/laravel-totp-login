@@ -4,8 +4,6 @@ namespace Empuxa\TotpLogin\Tests;
 
 use Empuxa\TotpLogin\Models\User;
 use Empuxa\TotpLogin\TotpLoginServiceProvider;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 use Orchestra\Testbench\TestCase;
 
 class TestbenchTestCase extends TestCase
