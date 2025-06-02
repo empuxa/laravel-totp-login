@@ -35,4 +35,4 @@ jobs:
       - name: Execute tests
         env:
           XDEBUG_MODE: coverage
-        run: vendor/bin/phpunit
+        run: composer test
