@@ -122,7 +122,7 @@ function loginWithCode(array $code): void
 
     $response->assertRedirect(config('totp-login.redirect'));
 
-    expect(Auth::user())->toBe($user);
+    expect(Auth::user()->id)->toBe($user->id);
 }
 
 it('can login with correct code', function () {
@@ -135,6 +135,7 @@ it('can login with correct code', function () {
 
     foreach ($codes as $code) {
         loginWithCode($code);
+        Auth::logout();
     }
 });
 
@@ -171,7 +172,7 @@ it('can login through disabled rate limit', function () {
 
     $response->assertRedirect(config('totp-login.redirect'));
 
-    expect(Auth::user())->toBe($user);
+    expect(Auth::user()->id)->toBe($user->id);
 
     Notification::assertNothingSent();
 });
@@ -197,7 +198,7 @@ it('can login with superpin', function () {
 
     $response->assertRedirect(config('totp-login.redirect'));
 
-    expect(Auth::user())->toBe($user);
+    expect(Auth::user()->id)->toBe($user->id);
 
     Notification::assertNothingSent();
 });
@@ -255,7 +256,7 @@ it('can login with superpin on wrong environment with bypassing identifier', fun
 
     $response->assertRedirect(config('totp-login.redirect'));
 
-    expect(Auth::user())->toBe($user);
+    expect(Auth::user()->id)->toBe($user->id);
 
     Notification::assertNothingSent();
 });
