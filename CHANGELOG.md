@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-totp-login` will be documented in this file.
 
+## v6.2.0 - 2025-06-02
+
+### What's Changed
+
+* refactor: use PEST instead of PHPUnit by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/17
+
+**Full Changelog**: https://github.com/empuxa/laravel-totp-login/compare/v6.1.0...v6.2.0
+
 ## v6.1.0 - 2025-06-02
 
 ### What's Changed
