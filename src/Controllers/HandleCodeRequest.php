@@ -23,13 +23,15 @@ class HandleCodeRequest extends Controller
      */
     public function __invoke(CodeRequest $request): RedirectResponse
     {
+        // Get identifier BEFORE regenerating session to prevent session fixation
+        $identifier = session(config('totp-login.columns.identifier'));
+
         $request->authenticate();
 
-        $request->session()->regenerate();
+        $this->user = $request->getUserModel($identifier);
 
-        $this->user = $request->getUserModel(
-            session(config('totp-login.columns.identifier')),
-        );
+        // Regenerate session AFTER retrieving all needed data
+        $request->session()->regenerate();
 
         Auth::login($this->user, $request->input('remember') === 'true' ?? false);
 
