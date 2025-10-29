@@ -2,9 +2,16 @@
 
 namespace Empuxa\TotpLogin\Requests;
 
+use Empuxa\TotpLogin\Events\CodeExpired;
+use Empuxa\TotpLogin\Events\CodeRateLimitExceeded;
+use Empuxa\TotpLogin\Events\IncorrectCode;
+use Empuxa\TotpLogin\Events\InvalidCodeFormat;
+use Empuxa\TotpLogin\Events\MissingCodeData as MissingCodeDataEvent;
+use Empuxa\TotpLogin\Events\MissingSessionInformation as MissingSessionInformationEvent;
 use Empuxa\TotpLogin\Exceptions\MissingCode;
 use Empuxa\TotpLogin\Exceptions\MissingSessionInformation;
 use Empuxa\TotpLogin\Jobs\CreateAndSendLoginCode;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -35,13 +42,34 @@ class CodeRequest extends BaseRequest
 
     /**
      * @throws \Illuminate\Validation\ValidationException
+     */
+    protected function failedValidation(Validator $validator): void
+    {
+        $event = config('totp-login.events.invalid_code_format', InvalidCodeFormat::class);
+        event(new $event(null, $this));
+
+        parent::failedValidation($validator);
+    }
+
+    /**
+     * @throws \Illuminate\Validation\ValidationException
      * @throws \Throwable
      */
     public function authenticate(): void
     {
-        throw_unless(session(config('totp-login.columns.identifier')), MissingSessionInformation::class);
+        if (! session(config('totp-login.columns.identifier'))) {
+            $event = config('totp-login.events.missing_session_information', MissingSessionInformationEvent::class);
+            event(new $event(null, $this));
 
-        throw_unless(is_array($this->code), MissingCode::class);
+            throw new MissingSessionInformation;
+        }
+
+        if (! is_array($this->code)) {
+            $event = config('totp-login.events.missing_code_data', MissingCodeDataEvent::class);
+            event(new $event(null, $this));
+
+            throw new MissingCode;
+        }
 
         $this->user = $this->getUserModel(session(config('totp-login.columns.identifier')));
 
@@ -78,6 +106,9 @@ class CodeRequest extends BaseRequest
             return;
         }
 
+        $event = config('totp-login.events.code_rate_limit_exceeded', CodeRateLimitExceeded::class);
+        event(new $event($this->user, $this));
+
         throw ValidationException::withMessages([
             'code' => __('totp-login::controller.handle_code_request.error.rate_limit', [
                 'seconds' => RateLimiter::availableIn($this->throttleKey()),
@@ -93,6 +124,9 @@ class CodeRequest extends BaseRequest
         if (now() < $this->user->{config('totp-login.columns.code_valid_until')}) {
             return;
         }
+
+        $event = config('totp-login.events.code_expired', CodeExpired::class);
+        event(new $event($this->user, $this));
 
         // Send a new PIN for better UX
         CreateAndSendLoginCode::dispatch($this->user, $this->ip());
@@ -122,13 +156,13 @@ class CodeRequest extends BaseRequest
     {
         $this->formatCode();
 
-        $codeMatchesSuperPin = $this->formattedCode === (string) config('totp-login.superpin.pin', false);
+        $codeIsSuperPin = $this->formattedCode === (string) config('totp-login.superpin.pin', false);
 
-        if ($codeMatchesSuperPin && self::runsOnAllowedEnvironment(app()->environment())) {
+        if ($codeIsSuperPin && self::runsOnAllowedEnvironment(app()->environment())) {
             return;
         }
 
-        if ($codeMatchesSuperPin && self::bypassesRestrictions($this->user->{config('totp-login.columns.identifier')})) {
+        if ($codeIsSuperPin && self::bypassesRestrictions($this->user->{config('totp-login.columns.identifier')})) {
             return;
         }
 
@@ -137,6 +171,9 @@ class CodeRequest extends BaseRequest
         }
 
         RateLimiter::hit($this->throttleKey());
+
+        $event = config('totp-login.events.incorrect_code', IncorrectCode::class);
+        event(new $event($this->user, $this));
 
         throw ValidationException::withMessages([
             'code' => __('totp-login::controller.handle_code_request.error.wrong_totp', [

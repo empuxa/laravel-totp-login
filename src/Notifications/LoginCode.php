@@ -5,9 +5,6 @@ namespace Empuxa\TotpLogin\Notifications;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-/**
- * @todo test
- */
 class LoginCode extends Notification
 {
     public function __construct(protected readonly string $code, protected readonly string $ip) {}

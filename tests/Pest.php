@@ -1,5 +1,9 @@
 <?php
 
+use Empuxa\TotpLogin\Tests\TestbenchTestCase;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
+
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -11,10 +15,7 @@
 |
 */
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
-
-uses(\Empuxa\TotpLogin\Tests\TestbenchTestCase::class)->in('Feature', 'Unit');
+uses(TestbenchTestCase::class)->in('Feature', 'Unit');
 
 /*
 |--------------------------------------------------------------------------
@@ -53,12 +54,14 @@ function createUser(array $params = []): Model
             'name'              => 'Test User',
             'email'             => 'user@example.com',
             'email_verified_at' => now(),
-            'password'          => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+            // Hash for "password"
+            'password'          => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
             'remember_token'    => Str::random(10),
         ],
         // Default package params
         [
-            config('totp-login.columns.code')             => '$2y$10$DJDW1ZCcd.6iqtq/JdivDuWTUCDxVES/efzv1e61CKLhdIJPupzI6', // 123456,
+            // Hash for "123456"
+            config('totp-login.columns.code')             => '$2y$10$DJDW1ZCcd.6iqtq/JdivDuWTUCDxVES/efzv1e61CKLhdIJPupzI6',
             config('totp-login.columns.code_valid_until') => now()->addSecond(),
         ],
         // Additional test params

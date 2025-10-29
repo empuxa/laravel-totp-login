@@ -147,18 +147,72 @@ return [
          * Triggered when a user requests a TOTP login code.
          * Default: \Empuxa\TotpLogin\Events\LoginRequestViaTotp::class
          */
-        'login_request_via_totp' => \Empuxa\TotpLogin\Events\LoginRequestViaTotp::class,
+        'login_request_via_totp'         => \Empuxa\TotpLogin\Events\LoginRequestViaTotp::class,
 
         /**
          * Triggered when a user successfully logs in using TOTP.
          * Default: \Empuxa\TotpLogin\Events\LoggedInViaTotp::class
          */
-        'logged_in_via_totp'     => \Empuxa\TotpLogin\Events\LoggedInViaTotp::class,
+        'logged_in_via_totp'             => \Empuxa\TotpLogin\Events\LoggedInViaTotp::class,
 
         /**
          * Triggered when a user is locked out after too many failed attempts.
          * Default: \Illuminate\Auth\Events\Lockout::class
          */
-        'lockout'                => \Illuminate\Auth\Events\Lockout::class,
+        'lockout'                        => \Illuminate\Auth\Events\Lockout::class,
+
+        /**
+         * Triggered when identifier validation fails (e.g., invalid email format).
+         * Default: \Empuxa\TotpLogin\Events\InvalidIdentifierFormat::class
+         */
+        'invalid_identifier_format'      => \Empuxa\TotpLogin\Events\InvalidIdentifierFormat::class,
+
+        /**
+         * Triggered when the provided identifier doesn't match any user in the database.
+         * Default: \Empuxa\TotpLogin\Events\UserNotFound::class
+         */
+        'user_not_found'                 => \Empuxa\TotpLogin\Events\UserNotFound::class,
+
+        /**
+         * Triggered when too many identifier attempts are made and the user is rate limited.
+         * Default: \Empuxa\TotpLogin\Events\IdentifierRateLimitExceeded::class
+         */
+        'identifier_rate_limit_exceeded' => \Empuxa\TotpLogin\Events\IdentifierRateLimitExceeded::class,
+
+        /**
+         * Triggered when session information is missing (e.g., session expired).
+         * Default: \Empuxa\TotpLogin\Events\MissingSessionInformation::class
+         */
+        'missing_session_information'    => \Empuxa\TotpLogin\Events\MissingSessionInformation::class,
+
+        /**
+         * Triggered when code data is not properly submitted in the request.
+         * Default: \Empuxa\TotpLogin\Events\MissingCodeData::class
+         */
+        'missing_code_data'              => \Empuxa\TotpLogin\Events\MissingCodeData::class,
+
+        /**
+         * Triggered when code validation fails (e.g., invalid format or length).
+         * Default: \Empuxa\TotpLogin\Events\InvalidCodeFormat::class
+         */
+        'invalid_code_format'            => \Empuxa\TotpLogin\Events\InvalidCodeFormat::class,
+
+        /**
+         * Triggered when the TOTP code has expired.
+         * Default: \Empuxa\TotpLogin\Events\CodeExpired::class
+         */
+        'code_expired'                   => \Empuxa\TotpLogin\Events\CodeExpired::class,
+
+        /**
+         * Triggered when an incorrect TOTP code is entered.
+         * Default: \Empuxa\TotpLogin\Events\IncorrectCode::class
+         */
+        'incorrect_code'                 => \Empuxa\TotpLogin\Events\IncorrectCode::class,
+
+        /**
+         * Triggered when too many incorrect code attempts are made and the user is rate limited.
+         * Default: \Empuxa\TotpLogin\Events\CodeRateLimitExceeded::class
+         */
+        'code_rate_limit_exceeded'       => \Empuxa\TotpLogin\Events\CodeRateLimitExceeded::class,
     ],
 ];

@@ -1,14 +1,17 @@
+.claude
 .idea
 .php_cs
 .php_cs.cache
+.php-cs-fixer.cache
 .phpunit.result.cache
+
 build
 composer.lock
 coverage
 phpunit.xml
 psalm.xml
 vendor
-.php-cs-fixer.cache
 
+CLAUDE.md
 settings.json
 test-results
