@@ -66,7 +66,7 @@ describe('LoginCode Notification', function () {
         $notification = new LoginCode($code, $ip);
 
         $user = createUser([
-            'name'                                            => 'Test User',
+            'name'                                        => 'Test User',
             config('totp-login.columns.code_valid_until') => now()->addMinutes(10),
         ]);
 
@@ -158,7 +158,7 @@ describe('LoginCode Notification', function () {
     it('includes greeting', function () {
         $notification = new LoginCode('123456', '127.0.0.1');
         $user = createUser([
-            'name'                                            => 'John Doe',
+            'name'                                        => 'John Doe',
             config('totp-login.columns.code_valid_until') => now()->addMinutes(10),
         ]);
 

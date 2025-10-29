@@ -1,7 +1,6 @@
 <?php
 
 use Empuxa\TotpLogin\Requests\IdentifierRequest;
-use Illuminate\Support\Str;
 
 describe('IdentifierRequest', function () {
     it('generates throttle key with identifier and IP', function () {
