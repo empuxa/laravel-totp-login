@@ -5,6 +5,7 @@ namespace Empuxa\TotpLogin\Requests;
 use Empuxa\TotpLogin\Exceptions\MissingCode;
 use Empuxa\TotpLogin\Exceptions\MissingSessionInformation;
 use Empuxa\TotpLogin\Jobs\CreateAndSendLoginCode;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -43,15 +44,20 @@ class CodeRequest extends BaseRequest
 
         throw_unless(is_array($this->code), MissingCode::class);
 
-        $this->user = $this->getUserModel(session(config('totp-login.columns.identifier')));
+        // Use database transaction with row locking for atomic code validation
+        // This prevents race conditions where multiple requests could validate the same code
+        DB::transaction(function (): void {
+            // Lock the user row for update to ensure atomic validation
+            $this->user = $this->getUserModel(session(config('totp-login.columns.identifier')), true);
 
-        if (is_null($this->user)) {
-            return;
-        }
+            if (is_null($this->user)) {
+                return;
+            }
 
-        $this->ensureIsNotRateLimited();
-        $this->ensureCodeIsNotExpired();
-        $this->validateCode();
+            $this->ensureIsNotRateLimited();
+            $this->ensureCodeIsNotExpired();
+            $this->validateCode();
+        });
 
         RateLimiter::clear($this->throttleKey());
     }
