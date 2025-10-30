@@ -14,6 +14,7 @@ class ShowCodeForm extends Controller
      */
     public function __invoke(): RedirectResponse|View
     {
+        /** @phpstan-ignore method.notFound */
         if (auth()->check()) {
             return redirect()->intended(config('totp-login.redirect'));
         }

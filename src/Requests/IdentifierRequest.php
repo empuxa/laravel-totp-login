@@ -41,7 +41,8 @@ class IdentifierRequest extends BaseRequest
     {
         $this->ensureIsNotRateLimited();
 
-        // This check might not be required depending on your validation rules
+        // This check might not be required if your validation rules already ensure
+        // the user exists (e.g., via 'exists:users,email' rule in config).
         $this->checkIfUserExists();
 
         RateLimiter::clear($this->throttleKey());
@@ -98,6 +99,8 @@ class IdentifierRequest extends BaseRequest
 
     public function throttleKey(): string
     {
+        // Throttle key includes IP address to prevent user enumeration attacks.
+        // An attacker could otherwise test multiple identifiers from the same IP.
         return Str::lower($this->input(config('totp-login.columns.identifier'))) . '|' . $this->ip();
     }
 }

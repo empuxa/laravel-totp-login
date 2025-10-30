@@ -5,8 +5,7 @@ use Illuminate\Support\Str;
 
 describe('CodeRequest', function () {
     it('formats code from array to string', function () {
-        $request = new CodeRequest;
-        $request->code = [1, 2, 3, 4, 5, 6];
+        $request = CodeRequest::create('/test', 'POST', ['code' => [1, 2, 3, 4, 5, 6]]);
 
         $formatted = $request->formatCode();
 
@@ -14,8 +13,7 @@ describe('CodeRequest', function () {
     });
 
     it('formats code with different digits', function () {
-        $request = new CodeRequest;
-        $request->code = [9, 8, 7, 6, 5, 4];
+        $request = CodeRequest::create('/test', 'POST', ['code' => [9, 8, 7, 6, 5, 4]]);
 
         $formatted = $request->formatCode();
 
@@ -23,8 +21,7 @@ describe('CodeRequest', function () {
     });
 
     it('formats code with zeros', function () {
-        $request = new CodeRequest;
-        $request->code = [0, 0, 1, 2, 3, 4];
+        $request = CodeRequest::create('/test', 'POST', ['code' => [0, 0, 1, 2, 3, 4]]);
 
         $formatted = $request->formatCode();
 
@@ -32,8 +29,7 @@ describe('CodeRequest', function () {
     });
 
     it('formats longer codes correctly', function () {
-        $request = new CodeRequest;
-        $request->code = [1, 2, 3, 4, 5, 6, 7, 8];
+        $request = CodeRequest::create('/test', 'POST', ['code' => [1, 2, 3, 4, 5, 6, 7, 8]]);
 
         $formatted = $request->formatCode();
 

@@ -106,16 +106,14 @@ describe('Code Phase Failure Events', function () {
         // We use a mock to simulate this edge case scenario.
         Event::fake();
 
-        // Mock the CodeRequest to simulate code property being null despite passing validation
+        // Mock the CodeRequest to simulate input('code') returning null
         $mock = Mockery::mock(CodeRequest::class)->makePartial();
         $mock->shouldReceive('authorize')->andReturn(true);
         $mock->shouldReceive('rules')->andReturn([
             'code'   => 'required|array|size:6',
             'code.*' => 'required|numeric|digits:1',
         ]);
-
-        // Set code property to null to trigger MissingCodeData
-        $mock->code = null;
+        $mock->shouldReceive('input')->with('code')->andReturn(null);
 
         // Set up session
         session([config('totp-login.columns.identifier') => $user->{config('totp-login.columns.identifier')}]);
