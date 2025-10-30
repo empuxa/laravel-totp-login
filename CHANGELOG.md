@@ -2,6 +2,21 @@
 
 All notable changes to `laravel-totp-login` will be documented in this file.
 
+## v6.3.0 - 2025-10-30
+
+### What's Changed
+
+* Bump actions/checkout from 4 to 5 by @dependabot[bot] in https://github.com/empuxa/laravel-totp-login/pull/20
+* Bump aglipanci/laravel-pint-action from 2.5 to 2.6 by @dependabot[bot] in https://github.com/empuxa/laravel-totp-login/pull/19
+* Bump stefanzweifel/git-auto-commit-action from 5 to 6 by @dependabot[bot] in https://github.com/empuxa/laravel-totp-login/pull/18
+* Bump stefanzweifel/git-auto-commit-action from 6 to 7 by @dependabot[bot] in https://github.com/empuxa/laravel-totp-login/pull/21
+* feat: drop PHP 8.1 support by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/27
+* feat: upgrade PEST by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/26
+* refactor: remove styleci config by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/28
+* feat: avoid session fixation by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/24
+
+**Full Changelog**: https://github.com/empuxa/laravel-totp-login/compare/v6.2.0...v6.3.0
+
 ## v6.2.0 - 2025-06-02
 
 ### What's Changed

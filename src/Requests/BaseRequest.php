@@ -12,7 +12,7 @@ class BaseRequest extends FormRequest
         return auth()->guest();
     }
 
-    public function getUserModel(?string $identifier = null): ?Model
+    public function getUserModel(?string $identifier = null, bool $lock = false): ?Model
     {
         $query = config('totp-login.model')::query();
 
@@ -21,11 +21,16 @@ class BaseRequest extends FormRequest
             $query = config('totp-login.model')::totpLoginScope();
         }
 
-        return $query
-            ->where(
-                config('totp-login.columns.identifier'),
-                $identifier ?? $this->input(config('totp-login.columns.identifier')),
-            )
-            ->first();
+        $query = $query->where(
+            config('totp-login.columns.identifier'),
+            $identifier ?? $this->input(config('totp-login.columns.identifier')),
+        );
+
+        // Apply pessimistic locking when requested (typically during code validation)
+        if ($lock) {
+            $query = $query->lockForUpdate();
+        }
+
+        return $query->first();
     }
 }
