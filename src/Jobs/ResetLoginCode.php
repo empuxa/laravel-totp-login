@@ -13,6 +13,9 @@ class ResetLoginCode
     public function __construct(public $user) {}
 
     /**
+     * Invalidates the TOTP code by setting its expiration to the past.
+     * Dispatched synchronously after successful login to prevent code reuse.
+     *
      * @throws \Exception
      */
     public function handle(): void

@@ -14,6 +14,9 @@ class CreateAndSendLoginCode
     public function __construct(public $user, public readonly string $ip = '') {}
 
     /**
+     * Generates a random TOTP code, hashes it, stores it in the database, and sends it to the user.
+     * This job is dispatched synchronously (dispatch_sync) to send the code immediately.
+     *
      * @throws \Exception
      */
     public function handle(): void

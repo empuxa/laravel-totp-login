@@ -11,6 +11,10 @@ use Illuminate\Routing\Controller;
 class HandleIdentifierRequest extends Controller
 {
     /**
+     * Handles the first step of TOTP authentication: identifier (email/phone) submission.
+     * Validates the identifier, generates a code, sends it to the user, and stores
+     * the identifier in session for the second step (code verification).
+     *
      * @throws \Illuminate\Validation\ValidationException
      */
     public function __invoke(IdentifierRequest $request): RedirectResponse

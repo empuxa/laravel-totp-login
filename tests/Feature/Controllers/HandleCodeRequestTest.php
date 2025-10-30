@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\RateLimiter;
 
-it('cannot login with wrong code', function () {
+it('cannot log in with wrong code', function () {
     Notification::fake();
 
     $user = createUser();
@@ -32,7 +32,7 @@ it('cannot login with wrong code', function () {
     Notification::assertNothingSent();
 });
 
-it('cannot login with expired session', function () {
+it('cannot log in with expired session', function () {
     Notification::fake();
 
     $user = createUser([
@@ -125,7 +125,7 @@ function loginWithCode(array $code): void
     expect(Auth::user()->id)->toBe($user->id);
 }
 
-it('can login with correct code', function () {
+it('can log in with correct code', function () {
     Notification::fake();
 
     $codes = [
@@ -139,7 +139,7 @@ it('can login with correct code', function () {
     }
 });
 
-it('can login through disabled rate limit', function () {
+it('can log in through disabled rate limit', function () {
     Notification::fake();
 
     Config::set('totp-login.code.enable_throttling', false);
@@ -177,7 +177,7 @@ it('can login through disabled rate limit', function () {
     Notification::assertNothingSent();
 });
 
-it('can login with superpin', function () {
+it('can log in with superpin', function () {
     Notification::fake();
 
     Config::set('totp-login.superpin.pin', 333333);
@@ -203,7 +203,7 @@ it('can login with superpin', function () {
     Notification::assertNothingSent();
 });
 
-it('cannot login with superpin on wrong environment', function () {
+it('cannot log in with superpin on wrong environment', function () {
     Notification::fake();
 
     Config::set('totp-login.superpin.pin', 333333);
@@ -232,7 +232,7 @@ it('cannot login with superpin on wrong environment', function () {
     Notification::assertNothingSent();
 });
 
-it('can login with superpin on wrong environment with bypassing identifier', function () {
+it('can log in with superpin on wrong environment with bypassing identifier', function () {
     Notification::fake();
 
     Config::set('totp-login.superpin.pin', 333333);
