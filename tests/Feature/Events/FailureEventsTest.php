@@ -1,7 +1,9 @@
 <?php
 
 use Empuxa\TotpLogin\Events\CodeExpired;
+use Empuxa\TotpLogin\Events\CodeRateLimitContinued;
 use Empuxa\TotpLogin\Events\CodeRateLimitExceeded;
+use Empuxa\TotpLogin\Events\IdentifierRateLimitContinued;
 use Empuxa\TotpLogin\Events\IdentifierRateLimitExceeded;
 use Empuxa\TotpLogin\Events\IncorrectCode;
 use Empuxa\TotpLogin\Events\InvalidCodeFormat;
@@ -76,6 +78,46 @@ describe('Identifier Phase Failure Events', function () {
         // Old event for backward compatibility
         $lockoutEvent = config('totp-login.events.lockout');
         Event::assertDispatched($lockoutEvent);
+    });
+
+    it('dispatches IdentifierRateLimitContinued event on subsequent attempts after rate limit', function () {
+        Config::set('totp-login.identifier.enable_throttling', true);
+        Event::fake();
+
+        // Hit rate limit first
+        for ($i = 0; $i < config('totp-login.identifier.max_attempts'); $i++) {
+            $this->post(route('totp-login.identifier.handle'), [
+                config('totp-login.columns.identifier') => 'nonexistent@example.com',
+            ]);
+        }
+
+        // Verify initial events fired on first rate limit hit
+        $exceededEvent = config('totp-login.events.identifier_rate_limit_exceeded', IdentifierRateLimitExceeded::class);
+        Event::assertDispatched($exceededEvent);
+
+        // Verify continued event has NOT fired yet
+        $continuedEvent = config('totp-login.events.identifier_rate_limit_continued', IdentifierRateLimitContinued::class);
+        Event::assertNotDispatched($continuedEvent);
+
+        // Clear the event fake to test subsequent attempt
+        Event::fake();
+
+        // Now we should see IdentifierRateLimitContinued on subsequent attempts
+        $this->post(route('totp-login.identifier.handle'), [
+            config('totp-login.columns.identifier') => 'nonexistent@example.com',
+        ]);
+
+        // Verify continued event fires
+        Event::assertDispatched($continuedEvent, function ($e) {
+            return $e->user === null && $e->request !== null;
+        });
+
+        // Verify the initial exceeded event does NOT fire again
+        Event::assertNotDispatched($exceededEvent);
+
+        // Verify Lockout does NOT fire again
+        $lockoutEvent = config('totp-login.events.lockout');
+        Event::assertNotDispatched($lockoutEvent);
     });
 });
 
@@ -218,6 +260,87 @@ describe('Code Phase Failure Events', function () {
             return $e->user !== null && $e->user->id === $user->id && $e->request !== null;
         });
     });
+
+    it('dispatches both CodeRateLimitExceeded and Lockout events', function () {
+        Config::set('totp-login.code.enable_throttling', true);
+
+        $user = createUser([
+            config('totp-login.columns.code_valid_until') => now()->addMinutes(10),
+        ]);
+
+        $session = [
+            config('totp-login.columns.identifier') => $user->{config('totp-login.columns.identifier')},
+        ];
+
+        // Make max attempts with wrong code
+        for ($i = 0; $i < config('totp-login.code.max_attempts'); $i++) {
+            $this
+                ->withSession($session)
+                ->post(route('totp-login.code.handle'), [
+                    'code' => [9, 9, 9, 9, 9, 9],
+                ]);
+        }
+
+        // New event
+        $event = config('totp-login.events.code_rate_limit_exceeded', CodeRateLimitExceeded::class);
+        Event::assertDispatched($event);
+
+        // Old event for backward compatibility
+        $lockoutEvent = config('totp-login.events.lockout');
+        Event::assertDispatched($lockoutEvent);
+    });
+
+    it('dispatches CodeRateLimitContinued event on subsequent attempts after code rate limit', function () {
+        Config::set('totp-login.code.enable_throttling', true);
+        Event::fake();
+
+        $user = createUser([
+            config('totp-login.columns.code_valid_until') => now()->addMinutes(10),
+        ]);
+
+        $session = [
+            config('totp-login.columns.identifier') => $user->{config('totp-login.columns.identifier')},
+        ];
+
+        // Hit rate limit first
+        for ($i = 0; $i < config('totp-login.code.max_attempts'); $i++) {
+            $this
+                ->withSession($session)
+                ->post(route('totp-login.code.handle'), [
+                    'code' => [9, 9, 9, 9, 9, 9],
+                ]);
+        }
+
+        // Verify initial events fired on first rate limit hit
+        $exceededEvent = config('totp-login.events.code_rate_limit_exceeded', CodeRateLimitExceeded::class);
+        Event::assertDispatched($exceededEvent);
+
+        // Verify continued event has NOT fired yet
+        $continuedEvent = config('totp-login.events.code_rate_limit_continued', CodeRateLimitContinued::class);
+        Event::assertNotDispatched($continuedEvent);
+
+        // Clear the event fake to test subsequent attempt
+        Event::fake();
+
+        // Now we should see CodeRateLimitContinued on subsequent attempts
+        $this
+            ->withSession($session)
+            ->post(route('totp-login.code.handle'), [
+                'code' => [9, 9, 9, 9, 9, 9],
+            ]);
+
+        // Verify continued event fires
+        Event::assertDispatched($continuedEvent, function ($e) use ($user) {
+            return $e->user !== null && $e->user->id === $user->id && $e->request !== null;
+        });
+
+        // Verify the initial exceeded event does NOT fire again
+        Event::assertNotDispatched($exceededEvent);
+
+        // Verify Lockout does NOT fire again
+        $lockoutEvent = config('totp-login.events.lockout');
+        Event::assertNotDispatched($lockoutEvent);
+    });
 });
 
 describe('Event Configuration', function () {
@@ -228,15 +351,19 @@ describe('Event Configuration', function () {
         $invalidIdentifierEvent = config('totp-login.events.invalid_identifier_format');
         $userNotFoundEvent = config('totp-login.events.user_not_found');
         $identifierRateLimitEvent = config('totp-login.events.identifier_rate_limit_exceeded');
+        $identifierRateLimitContinuedEvent = config('totp-login.events.identifier_rate_limit_continued');
         $codeExpiredEvent = config('totp-login.events.code_expired');
         $incorrectCodeEvent = config('totp-login.events.incorrect_code');
         $codeRateLimitEvent = config('totp-login.events.code_rate_limit_exceeded');
+        $codeRateLimitContinuedEvent = config('totp-login.events.code_rate_limit_continued');
 
         expect($invalidIdentifierEvent)->toBe(InvalidIdentifierFormat::class)
             ->and($userNotFoundEvent)->toBe(UserNotFound::class)
             ->and($identifierRateLimitEvent)->toBe(IdentifierRateLimitExceeded::class)
+            ->and($identifierRateLimitContinuedEvent)->toBe(IdentifierRateLimitContinued::class)
             ->and($codeExpiredEvent)->toBe(CodeExpired::class)
             ->and($incorrectCodeEvent)->toBe(IncorrectCode::class)
-            ->and($codeRateLimitEvent)->toBe(CodeRateLimitExceeded::class);
+            ->and($codeRateLimitEvent)->toBe(CodeRateLimitExceeded::class)
+            ->and($codeRateLimitContinuedEvent)->toBe(CodeRateLimitContinued::class);
     });
 });

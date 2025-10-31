@@ -3,6 +3,7 @@
 namespace Empuxa\TotpLogin\Requests;
 
 use Empuxa\TotpLogin\Events\CodeExpired;
+use Empuxa\TotpLogin\Events\CodeRateLimitContinued;
 use Empuxa\TotpLogin\Events\CodeRateLimitExceeded;
 use Empuxa\TotpLogin\Events\IncorrectCode;
 use Empuxa\TotpLogin\Events\InvalidCodeFormat;
@@ -11,6 +12,7 @@ use Empuxa\TotpLogin\Events\MissingSessionInformation;
 use Empuxa\TotpLogin\Exceptions\MissingCode as MissingCodeException;
 use Empuxa\TotpLogin\Exceptions\MissingSessionInformation as MissingSessionInformationException;
 use Empuxa\TotpLogin\Jobs\CreateAndSendLoginCode;
+use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -92,6 +94,8 @@ class CodeRequest extends BaseRequest
         });
 
         RateLimiter::clear($this->throttleKey());
+
+        session()->forget('rate_limited_code_' . $this->throttleKey());
     }
 
     public function formatCode(): string
@@ -116,8 +120,25 @@ class CodeRequest extends BaseRequest
             return;
         }
 
-        $event = config('totp-login.events.code_rate_limit_exceeded', CodeRateLimitExceeded::class);
-        event(new $event($this->user, $this));
+        $sessionKey = 'rate_limited_code_' . $this->throttleKey();
+
+        // Check if this is the first time hitting the rate limit or a continued attempt
+        if (! session()->has($sessionKey)) {
+            // First time hitting rate limit - fire CodeRateLimitExceeded event
+            $event = config('totp-login.events.code_rate_limit_exceeded', CodeRateLimitExceeded::class);
+            event(new $event($this->user, $this));
+
+            // Also fire the general Laravel Lockout event
+            $lockoutEvent = config('totp-login.events.lockout', Lockout::class);
+            event(new $lockoutEvent($this));
+
+            // Mark that rate limit has been hit
+            session()->put($sessionKey, now()->timestamp);
+        } else {
+            // Continued attempts after rate limit - fire CodeRateLimitContinued event
+            $event = config('totp-login.events.code_rate_limit_continued', CodeRateLimitContinued::class);
+            event(new $event($this->user, $this));
+        }
 
         throw ValidationException::withMessages([
             // SECURITY NOTE: Displaying 'seconds' could help attackers time their attempts.

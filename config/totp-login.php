@@ -214,5 +214,19 @@ return [
          * Default: \Empuxa\TotpLogin\Events\CodeRateLimitExceeded::class
          */
         'code_rate_limit_exceeded'       => \Empuxa\TotpLogin\Events\CodeRateLimitExceeded::class,
+
+        /**
+         * Triggered when a user continues to submit requests after hitting the code rate limit.
+         * Useful for detecting persistent brute force attempts.
+         * Default: \Empuxa\TotpLogin\Events\CodeRateLimitContinued::class
+         */
+        'code_rate_limit_continued'      => \Empuxa\TotpLogin\Events\CodeRateLimitContinued::class,
+
+        /**
+         * Triggered when a user continues to submit requests after hitting the identifier rate limit.
+         * Useful for detecting persistent brute force attempts.
+         * Default: \Empuxa\TotpLogin\Events\IdentifierRateLimitContinued::class
+         */
+        'identifier_rate_limit_continued' => \Empuxa\TotpLogin\Events\IdentifierRateLimitContinued::class,
     ],
 ];
