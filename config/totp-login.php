@@ -42,7 +42,9 @@ return [
         'middleware' => ['web', 'guest'],
 
         /**
-         * Prefix for the login route.
+         * Prefix for the login routes. This will be the base path for all TOTP login routes.
+         * For example, 'login' creates routes at /login and /login/code
+         * Change to 'auth' to create routes at /auth and /auth/code
          * Default: 'login'
          */
         'prefix'     => 'login',
@@ -214,5 +216,19 @@ return [
          * Default: \Empuxa\TotpLogin\Events\CodeRateLimitExceeded::class
          */
         'code_rate_limit_exceeded'       => \Empuxa\TotpLogin\Events\CodeRateLimitExceeded::class,
+
+        /**
+         * Triggered when a user continues to submit requests after hitting the code rate limit.
+         * Useful for detecting persistent brute force attempts.
+         * Default: \Empuxa\TotpLogin\Events\CodeRateLimitContinued::class
+         */
+        'code_rate_limit_continued'      => \Empuxa\TotpLogin\Events\CodeRateLimitContinued::class,
+
+        /**
+         * Triggered when a user continues to submit requests after hitting the identifier rate limit.
+         * Useful for detecting persistent brute force attempts.
+         * Default: \Empuxa\TotpLogin\Events\IdentifierRateLimitContinued::class
+         */
+        'identifier_rate_limit_continued' => \Empuxa\TotpLogin\Events\IdentifierRateLimitContinued::class,
     ],
 ];

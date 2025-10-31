@@ -2,6 +2,7 @@
 
 namespace Empuxa\TotpLogin\Requests;
 
+use Empuxa\TotpLogin\Events\IdentifierRateLimitContinued;
 use Empuxa\TotpLogin\Events\IdentifierRateLimitExceeded;
 use Empuxa\TotpLogin\Events\InvalidIdentifierFormat;
 use Empuxa\TotpLogin\Events\UserNotFound;
@@ -46,6 +47,8 @@ class IdentifierRequest extends BaseRequest
         $this->checkIfUserExists();
 
         RateLimiter::clear($this->throttleKey());
+
+        session()->forget('rate_limited_identifier_' . $this->throttleKey());
     }
 
     /**
@@ -61,12 +64,25 @@ class IdentifierRequest extends BaseRequest
             return;
         }
 
-        $event = config('totp-login.events.identifier_rate_limit_exceeded', IdentifierRateLimitExceeded::class);
-        event(new $event(null, $this));
+        $sessionKey = 'rate_limited_identifier_' . $this->throttleKey();
 
-        // Also fire the Laravel Lockout event for backward compatibility
-        $lockoutEvent = config('totp-login.events.lockout', Lockout::class);
-        event(new $lockoutEvent($this));
+        // Check if this is the first time hitting the rate limit or a continued attempt
+        if (! session()->has($sessionKey)) {
+            // First time hitting rate limit - fire IdentifierRateLimitExceeded event
+            $event = config('totp-login.events.identifier_rate_limit_exceeded', IdentifierRateLimitExceeded::class);
+            event(new $event(null, $this));
+
+            // Also fire the general Laravel Lockout event
+            $lockoutEvent = config('totp-login.events.lockout', Lockout::class);
+            event(new $lockoutEvent($this));
+
+            // Mark that rate limit has been hit
+            session()->put($sessionKey, now()->timestamp);
+        } else {
+            // Continued attempts after rate limit - fire IdentifierRateLimitContinued event
+            $event = config('totp-login.events.identifier_rate_limit_continued', IdentifierRateLimitContinued::class);
+            event(new $event(null, $this));
+        }
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
