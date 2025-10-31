@@ -42,7 +42,9 @@ return [
         'middleware' => ['web', 'guest'],
 
         /**
-         * Prefix for the login route.
+         * Prefix for the login routes. This will be the base path for all TOTP login routes.
+         * For example, 'login' creates routes at /login and /login/code
+         * Change to 'auth' to create routes at /auth and /auth/code
          * Default: 'login'
          */
         'prefix'     => 'login',
