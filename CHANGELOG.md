@@ -2,6 +2,38 @@
 
 All notable changes to `laravel-totp-login` will be documented in this file.
 
+## v7.0.0 - 2026-02-22
+
+v7 brings a lot of security improvements and events for any failed log in case.
+
+### Breaking Changes
+
+#### Code changes
+
+The `getUserModel()` method in `BaseRequest` now has an additional `$lock` parameter:
+
+```
+public function getUserModel(?string $identifier = null, bool $lock = false): ?Model
+
+```
+While this is not a real breaking change per se it might lead to issues if you did manually override it.
+
+#### Logical Changes
+
+The Laravel `Lockout` event is now sent on the identifier and code handler, not only on on the identifier handler.
+
+### What's Changed
+
+* feat: add atomic locks by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/25
+* feat: add error events by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/23
+* feat: prevent timing attacks and add code docs by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/29
+* feat: send different events on lockout by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/30
+* Bump actions/checkout from 5 to 6 by @dependabot[bot] in https://github.com/empuxa/laravel-totp-login/pull/31
+* feat: add PHP 8.5 to tests by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/32
+* Bump dependabot/fetch-metadata from 2.4.0 to 2.5.0 by @dependabot[bot] in https://github.com/empuxa/laravel-totp-login/pull/33
+
+**Full Changelog**: https://github.com/empuxa/laravel-totp-login/compare/v6.3.0...v7.0.0
+
 ## v6.3.0 - 2025-10-30
 
 ### What's Changed
