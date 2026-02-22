@@ -62,7 +62,7 @@ function createUser(array $params = []): Model
         [
             // Hash for "123456"
             config('totp-login.columns.code')             => '$2y$10$DJDW1ZCcd.6iqtq/JdivDuWTUCDxVES/efzv1e61CKLhdIJPupzI6',
-            config('totp-login.columns.code_valid_until') => now()->addSecond(),
+            config('totp-login.columns.code_valid_until') => now()->addMinutes(5),
         ],
         // Additional test params
         $params,
