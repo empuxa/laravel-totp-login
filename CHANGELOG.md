@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-totp-login` will be documented in this file.
 
+## v7.1.0 - 2026-02-28
+
+### What's Changed
+
+* feat: add support for Laravel 13 by @marcoraddatz in https://github.com/empuxa/laravel-totp-login/pull/34
+
+**Full Changelog**: https://github.com/empuxa/laravel-totp-login/compare/v7.0.0...v7.1.0
+
 ## v7.0.0 - 2026-02-22
 
 v7 brings a lot of security improvements and events for any failed log in case.
@@ -14,6 +22,7 @@ The `getUserModel()` method in `BaseRequest` now has an additional `$lock` param
 
 ```
 public function getUserModel(?string $identifier = null, bool $lock = false): ?Model
+
 
 ```
 While this is not a real breaking change per se it might lead to issues if you did manually override it.
