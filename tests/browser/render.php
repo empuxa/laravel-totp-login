@@ -1,11 +1,13 @@
 <?php
 
+use Empuxa\TotpLogin\Tests\TestbenchTestCase;
+
 require __DIR__ . '/../../vendor/autoload.php';
 
 putenv('APP_KEY=base64:' . base64_encode(str_repeat('x', 32)));
 putenv('MAIL_MAILER=array');
 
-class BrowserFixtures extends \Empuxa\TotpLogin\Tests\TestbenchTestCase
+class BrowserFixtures extends TestbenchTestCase
 {
     public function renderFixtures(): void
     {

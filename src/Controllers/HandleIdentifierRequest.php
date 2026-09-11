@@ -7,6 +7,7 @@ use Empuxa\TotpLogin\Jobs\CreateAndSendLoginCode;
 use Empuxa\TotpLogin\Requests\IdentifierRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Controller;
+use Illuminate\Validation\ValidationException;
 
 class HandleIdentifierRequest extends Controller
 {
@@ -15,7 +16,7 @@ class HandleIdentifierRequest extends Controller
      * Validates the identifier, generates a code, sends it to the user, and stores
      * the identifier in session for the second step (code verification).
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function __invoke(IdentifierRequest $request): RedirectResponse
     {

@@ -1,6 +1,8 @@
 <?php
 
 use Empuxa\TotpLogin\Jobs\CreateAndSendLoginCode;
+use Empuxa\TotpLogin\Notifications\LoginCode;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 
 it('can send notification', function () {
@@ -35,10 +37,10 @@ it('persists the replacement code sent after expiry and accepts it', function ()
         'code' => str_split('123456'),
     ])->assertSessionHasErrors('code');
 
-    $notification = Notification::sent($user, \Empuxa\TotpLogin\Notifications\LoginCode::class)->sole();
+    $notification = Notification::sent($user, LoginCode::class)->sole();
     $code = implode('', $notification->toMail($user->fresh())->viewData['code']);
     expect($user->fresh()->login_totp_code)->not->toBe($oldHash);
-    expect(\Illuminate\Support\Facades\Hash::check($code, $user->fresh()->login_totp_code))->toBeTrue();
+    expect(Hash::check($code, $user->fresh()->login_totp_code))->toBeTrue();
     expect(now()->lessThan($user->fresh()->login_totp_code_valid_until))->toBeTrue();
     $this->post(route('totp-login.code.handle'), ['code' => str_split($code)])->assertSessionHasNoErrors();
     $this->assertAuthenticatedAs($user);
@@ -52,9 +54,9 @@ it('does not send a code when the outer transaction rolls back', function () {
         $user->getConnection()->transaction(function () use ($user) {
             CreateAndSendLoginCode::dispatchSync($user);
             Notification::assertNothingSent();
-            throw new \RuntimeException('rollback');
+            throw new RuntimeException('rollback');
         });
-    } catch (\RuntimeException $exception) {
+    } catch (RuntimeException $exception) {
         expect($exception->getMessage())->toBe('rollback');
     }
     Notification::assertNothingSent();

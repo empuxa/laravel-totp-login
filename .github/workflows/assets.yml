@@ -16,7 +16,9 @@ jobs:
           php-version: '8.4'
           extensions: pdo_sqlite
       - run: composer install --prefer-dist --no-interaction
+      - run: composer audit --locked
       - run: npm ci
+      - run: npm audit
       - run: npm run build
       - run: git diff --exit-code -- resources/dist
       - run: npx playwright install --with-deps chromium

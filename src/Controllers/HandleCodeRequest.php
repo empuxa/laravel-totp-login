@@ -4,16 +4,19 @@ namespace Empuxa\TotpLogin\Controllers;
 
 use Empuxa\TotpLogin\Events\LoggedInViaTotp;
 use Empuxa\TotpLogin\Requests\CodeRequest;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 
 class HandleCodeRequest extends Controller
 {
     protected ?string $code = null;
 
     /**
-     * @var \Illuminate\Database\Eloquent\Model&\Illuminate\Contracts\Auth\Authenticatable
+     * @var Model&Authenticatable
      */
     protected $user;
 
@@ -27,12 +30,12 @@ class HandleCodeRequest extends Controller
         $user = $request->getAuthenticatedUser();
 
         if (is_null($user)) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 'code' => __('totp-login::controller.handle_code_request.error.invalid'),
             ]);
         }
 
-        /** @var \Illuminate\Database\Eloquent\Model&\Illuminate\Contracts\Auth\Authenticatable $user */
+        /** @var Model&Authenticatable $user */
         $this->user = $user;
 
         $request->session()->regenerate();

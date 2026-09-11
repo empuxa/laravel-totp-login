@@ -1,6 +1,8 @@
 <?php
 
 use Empuxa\TotpLogin\Models\User;
+use Empuxa\TotpLogin\TotpLoginServiceProvider;
+use Illuminate\Support\ServiceProvider;
 
 it('can render login screen', function () {
     $response = $this->get(route('totp-login.identifier.form'));
@@ -25,8 +27,8 @@ it('redirects when already logged in', function () {
 });
 
 it('registers publishable local assets for both login forms', function () {
-    $paths = \Illuminate\Support\ServiceProvider::pathsToPublish(
-        \Empuxa\TotpLogin\TotpLoginServiceProvider::class,
+    $paths = ServiceProvider::pathsToPublish(
+        TotpLoginServiceProvider::class,
         'totp-login-assets',
     );
     expect($paths)->not->toBeEmpty();

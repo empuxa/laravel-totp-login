@@ -1,17 +1,34 @@
 <?php
 
+use App\Models\User;
+use Empuxa\TotpLogin\Events\CodeExpired;
+use Empuxa\TotpLogin\Events\CodeRateLimitContinued;
+use Empuxa\TotpLogin\Events\CodeRateLimitExceeded;
+use Empuxa\TotpLogin\Events\IdentifierRateLimitContinued;
+use Empuxa\TotpLogin\Events\IdentifierRateLimitExceeded;
+use Empuxa\TotpLogin\Events\IncorrectCode;
+use Empuxa\TotpLogin\Events\InvalidCodeFormat;
+use Empuxa\TotpLogin\Events\InvalidIdentifierFormat;
+use Empuxa\TotpLogin\Events\LoggedInViaTotp;
+use Empuxa\TotpLogin\Events\LoginRequestViaTotp;
+use Empuxa\TotpLogin\Events\MissingCodeData;
+use Empuxa\TotpLogin\Events\MissingSessionInformation;
+use Empuxa\TotpLogin\Events\UserNotFound;
+use Empuxa\TotpLogin\Notifications\LoginCode;
+use Illuminate\Auth\Events\Lockout;
+
 return [
     /**
      * The model used for login operations.
      * Default: \App\Models\User::class
      */
-    'model'        => \App\Models\User::class,
+    'model'        => User::class,
 
     /**
      * The notification class used to send the login code to the user.
      * Default: \Empuxa\TotpLogin\Notifications\LoginCode::class
      */
-    'notification' => \Empuxa\TotpLogin\Notifications\LoginCode::class,
+    'notification' => LoginCode::class,
 
     'columns'      => [
         /**
@@ -156,86 +173,86 @@ return [
          * Triggered when a user requests a TOTP login code.
          * Default: \Empuxa\TotpLogin\Events\LoginRequestViaTotp::class
          */
-        'login_request_via_totp'          => \Empuxa\TotpLogin\Events\LoginRequestViaTotp::class,
+        'login_request_via_totp'          => LoginRequestViaTotp::class,
 
         /**
          * Triggered when a user successfully logs in using TOTP.
          * Default: \Empuxa\TotpLogin\Events\LoggedInViaTotp::class
          */
-        'logged_in_via_totp'              => \Empuxa\TotpLogin\Events\LoggedInViaTotp::class,
+        'logged_in_via_totp'              => LoggedInViaTotp::class,
 
         /**
          * Triggered when a user is locked out after too many failed attempts.
          * Default: \Illuminate\Auth\Events\Lockout::class
          */
-        'lockout'                         => \Illuminate\Auth\Events\Lockout::class,
+        'lockout'                         => Lockout::class,
 
         /**
          * Triggered when identifier validation fails (e.g., invalid email format).
          * Default: \Empuxa\TotpLogin\Events\InvalidIdentifierFormat::class
          */
-        'invalid_identifier_format'       => \Empuxa\TotpLogin\Events\InvalidIdentifierFormat::class,
+        'invalid_identifier_format'       => InvalidIdentifierFormat::class,
 
         /**
          * Triggered when the provided identifier doesn't match any user in the database.
          * Default: \Empuxa\TotpLogin\Events\UserNotFound::class
          */
-        'user_not_found'                  => \Empuxa\TotpLogin\Events\UserNotFound::class,
+        'user_not_found'                  => UserNotFound::class,
 
         /**
          * Triggered when too many identifier attempts are made and the user is rate limited.
          * Default: \Empuxa\TotpLogin\Events\IdentifierRateLimitExceeded::class
          */
-        'identifier_rate_limit_exceeded'  => \Empuxa\TotpLogin\Events\IdentifierRateLimitExceeded::class,
+        'identifier_rate_limit_exceeded'  => IdentifierRateLimitExceeded::class,
 
         /**
          * Triggered when session information is missing (e.g., session expired).
          * Default: \Empuxa\TotpLogin\Events\MissingSessionInformation::class
          */
-        'missing_session_information'     => \Empuxa\TotpLogin\Events\MissingSessionInformation::class,
+        'missing_session_information'     => MissingSessionInformation::class,
 
         /**
          * Triggered when code data is not properly submitted in the request.
          * Default: \Empuxa\TotpLogin\Events\MissingCodeData::class
          */
-        'missing_code_data'               => \Empuxa\TotpLogin\Events\MissingCodeData::class,
+        'missing_code_data'               => MissingCodeData::class,
 
         /**
          * Triggered when code validation fails (e.g., invalid format or length).
          * Default: \Empuxa\TotpLogin\Events\InvalidCodeFormat::class
          */
-        'invalid_code_format'             => \Empuxa\TotpLogin\Events\InvalidCodeFormat::class,
+        'invalid_code_format'             => InvalidCodeFormat::class,
 
         /**
          * Triggered when the TOTP code has expired.
          * Default: \Empuxa\TotpLogin\Events\CodeExpired::class
          */
-        'code_expired'                    => \Empuxa\TotpLogin\Events\CodeExpired::class,
+        'code_expired'                    => CodeExpired::class,
 
         /**
          * Triggered when an incorrect TOTP code is entered.
          * Default: \Empuxa\TotpLogin\Events\IncorrectCode::class
          */
-        'incorrect_code'                  => \Empuxa\TotpLogin\Events\IncorrectCode::class,
+        'incorrect_code'                  => IncorrectCode::class,
 
         /**
          * Triggered when too many incorrect code attempts are made and the user is rate limited.
          * Default: \Empuxa\TotpLogin\Events\CodeRateLimitExceeded::class
          */
-        'code_rate_limit_exceeded'        => \Empuxa\TotpLogin\Events\CodeRateLimitExceeded::class,
+        'code_rate_limit_exceeded'        => CodeRateLimitExceeded::class,
 
         /**
          * Triggered when a user continues to submit requests after hitting the code rate limit.
          * Useful for detecting persistent brute force attempts.
          * Default: \Empuxa\TotpLogin\Events\CodeRateLimitContinued::class
          */
-        'code_rate_limit_continued'       => \Empuxa\TotpLogin\Events\CodeRateLimitContinued::class,
+        'code_rate_limit_continued'       => CodeRateLimitContinued::class,
 
         /**
          * Triggered when a user continues to submit requests after hitting the identifier rate limit.
          * Useful for detecting persistent brute force attempts.
          * Default: \Empuxa\TotpLogin\Events\IdentifierRateLimitContinued::class
          */
-        'identifier_rate_limit_continued' => \Empuxa\TotpLogin\Events\IdentifierRateLimitContinued::class,
+        'identifier_rate_limit_continued' => IdentifierRateLimitContinued::class,
     ],
 ];

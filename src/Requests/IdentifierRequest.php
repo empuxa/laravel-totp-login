@@ -29,7 +29,7 @@ class IdentifierRequest extends BaseRequest
     }
 
     /**
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     protected function failedValidation(Validator $validator): void
     {
@@ -40,7 +40,7 @@ class IdentifierRequest extends BaseRequest
     }
 
     /**
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function authenticate(): void
     {
@@ -60,7 +60,7 @@ class IdentifierRequest extends BaseRequest
     }
 
     /**
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function ensureIsNotRateLimited(): void
     {
@@ -108,7 +108,7 @@ class IdentifierRequest extends BaseRequest
     }
 
     /**
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function checkIfUserExists(): void
     {

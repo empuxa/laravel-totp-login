@@ -15,6 +15,7 @@ use Empuxa\TotpLogin\Jobs\CreateAndSendLoginCode;
 use Empuxa\TotpLogin\Jobs\ResetLoginCode;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -24,7 +25,7 @@ use Illuminate\Validation\ValidationException;
 class CodeRequest extends BaseRequest
 {
     /**
-     * @var \Illuminate\Database\Eloquent\Model
+     * @var Model
      */
     public $user;
 
@@ -44,7 +45,7 @@ class CodeRequest extends BaseRequest
     }
 
     /**
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     protected function failedValidation(Validator $validator): void
     {
@@ -55,7 +56,7 @@ class CodeRequest extends BaseRequest
     }
 
     /**
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      * @throws \Throwable
      */
     public function authenticate(): void
@@ -108,7 +109,7 @@ class CodeRequest extends BaseRequest
     }
 
     /**
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function ensureIsNotRateLimited(): void
     {
@@ -146,7 +147,7 @@ class CodeRequest extends BaseRequest
     }
 
     /**
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function ensureCodeIsNotExpired(): void
     {
@@ -212,7 +213,7 @@ class CodeRequest extends BaseRequest
      *
      * This makes timing-based attacks impractical, as all code paths take similar time.
      *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
     public function validateCode(): void
     {

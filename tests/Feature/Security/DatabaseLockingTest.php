@@ -1,7 +1,10 @@
 <?php
 
+use Empuxa\TotpLogin\Requests\CodeRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Validation\ValidationException;
 
 describe('Database Row Locking', function () {
     it('successfully authenticates with database locking in place', function () {
@@ -214,7 +217,7 @@ describe('Database Row Locking', function () {
 it('consumes the code before authentication returns to the controller', function () {
     $user = createUser();
     session(['email' => $user->email]);
-    $request = \Empuxa\TotpLogin\Requests\CodeRequest::create('/login/code', 'POST', [
+    $request = CodeRequest::create('/login/code', 'POST', [
         'code' => str_split('123456'),
     ]);
 
@@ -222,9 +225,9 @@ it('consumes the code before authentication returns to the controller', function
 
     expect(now()->greaterThan($user->fresh()->login_totp_code_valid_until))->toBeTrue();
     expect(auth()->check())->toBeFalse();
-    $second = \Empuxa\TotpLogin\Requests\CodeRequest::create('/login/code', 'POST', [
+    $second = CodeRequest::create('/login/code', 'POST', [
         'code' => str_split('123456'),
     ]);
-    \Illuminate\Support\Facades\Notification::fake();
-    expect(fn () => $second->authenticate())->toThrow(\Illuminate\Validation\ValidationException::class);
+    Notification::fake();
+    expect(fn () => $second->authenticate())->toThrow(ValidationException::class);
 });
