@@ -22,25 +22,14 @@ class HandleCodeRequest extends Controller
      */
     public function __invoke(CodeRequest $request): RedirectResponse
     {
-        // SESSION FIXATION PREVENTION:
-        // To prevent session fixation attacks (where an attacker tricks a victim into using
-        // a session ID controlled by the attacker, then hijacks the session after the victim
-        // logs in), we must regenerate the session ID before logging in the user.
-        //
-        // However, session regeneration clears all session data, so we need to:
-        // 1. Extract identifier from session
-        // 2. Validate the code
-        // 3. Fetch user with the extracted identifier
-        // 4. Regenerate session (creates new session ID)
-        // 5. Login user (with clean session)
-        $identifier = session(config('totp-login.columns.identifier'));
-
         $request->authenticate();
 
-        $user = $request->getUserModel($identifier);
+        $user = $request->getAuthenticatedUser();
 
         if (is_null($user)) {
-            throw new \RuntimeException('User not found after authentication');
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'code' => __('totp-login::controller.handle_code_request.error.invalid'),
+            ]);
         }
 
         /** @var \Illuminate\Database\Eloquent\Model&\Illuminate\Contracts\Auth\Authenticatable $user */

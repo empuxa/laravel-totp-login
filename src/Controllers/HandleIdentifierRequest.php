@@ -23,7 +23,7 @@ class HandleIdentifierRequest extends Controller
 
         $identifierData = $request->input(config('totp-login.columns.identifier'));
 
-        $user = $request->allowedToSend ? $request->getUserModel($identifierData) : null;
+        $user = $request->getAuthenticatedUser();
 
         if ($user !== null) {
             CreateAndSendLoginCode::dispatch($user, $request->ip());

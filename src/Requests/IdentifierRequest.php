@@ -16,6 +16,8 @@ class IdentifierRequest extends BaseRequest
 {
     public bool $allowedToSend = true;
 
+    public $user;
+
     /**
      * @return array<int|string, mixed>
      */
@@ -110,7 +112,8 @@ class IdentifierRequest extends BaseRequest
      */
     public function checkIfUserExists(): void
     {
-        if (! is_null($this->getUserModel())) {
+        $this->user = $this->getUserModel();
+        if (! is_null($this->user)) {
             return;
         }
 

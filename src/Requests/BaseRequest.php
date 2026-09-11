@@ -13,6 +13,11 @@ class BaseRequest extends FormRequest
         return auth()->guest();
     }
 
+    public function getAuthenticatedUser(): ?Model
+    {
+        return $this->user ?? null;
+    }
+
     public function getUserModel(?string $identifier = null, bool $lock = false): ?Model
     {
         $query = config('totp-login.model')::query();
