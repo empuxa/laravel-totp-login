@@ -33,7 +33,7 @@ class CodeRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'code'     => config('totp-login.code.validation'),
+            'code'     => config('totp-login.code.validation') ?? 'required|array|size:' . config('totp-login.code.length'),
             'code.*'   => 'required|numeric|digits:1',
             'remember' => [
                 'sometimes',
@@ -104,11 +104,7 @@ class CodeRequest extends BaseRequest
 
     public function formatCode(): string
     {
-        collect($this->input('code'))->each(function ($digit): void {
-            $this->formattedCode .= $digit;
-        });
-
-        return $this->formattedCode;
+        return $this->formattedCode = implode('', $this->input('code'));
     }
 
     /**
@@ -120,7 +116,7 @@ class CodeRequest extends BaseRequest
             return;
         }
 
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), config('totp-login.code.max_attempts') - 1)) {
+        if (! RateLimiter::tooManyAttempts($this->throttleKey(), config('totp-login.code.max_attempts'))) {
             return;
         }
 

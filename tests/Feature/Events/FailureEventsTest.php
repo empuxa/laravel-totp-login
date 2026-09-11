@@ -50,7 +50,7 @@ describe('Identifier Phase Failure Events', function () {
     it('dispatches IdentifierRateLimitExceeded event when rate limit is hit', function () {
         Config::set('totp-login.identifier.enable_throttling', true);
 
-        for ($i = 0; $i < config('totp-login.identifier.max_attempts'); $i++) {
+        for ($i = 0; $i <= config('totp-login.identifier.max_attempts'); $i++) {
             $this->post(route('totp-login.identifier.handle'), [
                 config('totp-login.columns.identifier') => 'nonexistent@example.com',
             ]);
@@ -65,7 +65,7 @@ describe('Identifier Phase Failure Events', function () {
     it('dispatches both IdentifierRateLimitExceeded and Lockout events for backward compatibility', function () {
         Config::set('totp-login.identifier.enable_throttling', true);
 
-        for ($i = 0; $i < config('totp-login.identifier.max_attempts'); $i++) {
+        for ($i = 0; $i <= config('totp-login.identifier.max_attempts'); $i++) {
             $this->post(route('totp-login.identifier.handle'), [
                 config('totp-login.columns.identifier') => 'nonexistent@example.com',
             ]);
@@ -85,7 +85,7 @@ describe('Identifier Phase Failure Events', function () {
         Event::fake();
 
         // Hit rate limit first
-        for ($i = 0; $i < config('totp-login.identifier.max_attempts'); $i++) {
+        for ($i = 0; $i <= config('totp-login.identifier.max_attempts'); $i++) {
             $this->post(route('totp-login.identifier.handle'), [
                 config('totp-login.columns.identifier') => 'nonexistent@example.com',
             ]);
@@ -247,7 +247,7 @@ describe('Code Phase Failure Events', function () {
         ];
 
         // Make max attempts with wrong code
-        for ($i = 0; $i < config('totp-login.code.max_attempts'); $i++) {
+        for ($i = 0; $i <= config('totp-login.code.max_attempts'); $i++) {
             $this
                 ->withSession($session)
                 ->post(route('totp-login.code.handle'), [
@@ -273,7 +273,7 @@ describe('Code Phase Failure Events', function () {
         ];
 
         // Make max attempts with wrong code
-        for ($i = 0; $i < config('totp-login.code.max_attempts'); $i++) {
+        for ($i = 0; $i <= config('totp-login.code.max_attempts'); $i++) {
             $this
                 ->withSession($session)
                 ->post(route('totp-login.code.handle'), [
@@ -303,7 +303,7 @@ describe('Code Phase Failure Events', function () {
         ];
 
         // Hit rate limit first
-        for ($i = 0; $i < config('totp-login.code.max_attempts'); $i++) {
+        for ($i = 0; $i <= config('totp-login.code.max_attempts'); $i++) {
             $this
                 ->withSession($session)
                 ->post(route('totp-login.code.handle'), [

@@ -45,7 +45,7 @@ it('does not send email to user with rate limit', function () {
     Event::fake();
     Notification::fake();
 
-    for ($i = 0; $i < config('totp-login.identifier.max_attempts'); $i++) {
+    for ($i = 0; $i <= config('totp-login.identifier.max_attempts'); $i++) {
         $this->post(route('totp-login.identifier.handle'), [
             config('totp-login.columns.identifier') => 'non_existing@example.com',
         ]);

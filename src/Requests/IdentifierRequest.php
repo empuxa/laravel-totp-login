@@ -72,7 +72,7 @@ class IdentifierRequest extends BaseRequest
         $ipKey = 'totp-login:request-ip:' . hash('sha256', (string) $this->ip());
         $ipAttempts = RateLimiter::hit($ipKey);
 
-        if ($accountAttempts <= config('totp-login.identifier.max_attempts') - 1
+        if ($accountAttempts <= config('totp-login.identifier.max_attempts')
             && $ipAttempts <= config('totp-login.identifier.max_attempts_per_ip', 20)) {
             return;
         }
