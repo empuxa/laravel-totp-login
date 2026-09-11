@@ -23,3 +23,20 @@ it('redirects when already logged in', function () {
 
     $response->assertRedirect();
 });
+
+it('registers publishable local assets for both login forms', function () {
+    $paths = \Illuminate\Support\ServiceProvider::pathsToPublish(
+        \Empuxa\TotpLogin\TotpLoginServiceProvider::class,
+        'totp-login-assets',
+    );
+    expect($paths)->not->toBeEmpty();
+    foreach ($paths as $source => $destination) {
+        expect(is_file($source . '/login.css'))->toBeTrue();
+        expect(is_file($source . '/login.js'))->toBeTrue();
+        expect($destination)->toBe(public_path('vendor/totp-login'));
+    }
+    $html = $this->get(route('totp-login.identifier.form'))->getContent();
+    expect($html)->toContain('/vendor/totp-login/login.css')->not->toContain('cdn.');
+    $html = $this->withSession(['email' => 'test@example.com'])->get(route('totp-login.code.form'))->getContent();
+    expect($html)->toContain('/vendor/totp-login/login.js')->not->toContain('cdn.');
+});

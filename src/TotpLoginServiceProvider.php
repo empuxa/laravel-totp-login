@@ -15,6 +15,7 @@ class TotpLoginServiceProvider extends PackageServiceProvider
             ->hasMigration('add_totp_columns_to_users_table')
             ->hasTranslations()
             ->hasViews()
+            ->hasAssets()
             ->hasRoute('web');
     }
 }

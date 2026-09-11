@@ -1,0 +1,23 @@
+name: Login assets
+
+on: [push, pull_request]
+
+jobs:
+  assets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_sqlite
+      - run: composer install --prefer-dist --no-interaction
+      - run: npm ci
+      - run: npm run build
+      - run: git diff --exit-code -- resources/dist
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser

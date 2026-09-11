@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     {{-- (Force latest IE rendering engine: bit.ly/1c8EiC9 --}}
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta http-equiv="content-language" content="{{ app()->getLocale() }}">
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{{ asset('vendor/totp-login/login.css') }}">
     <title>Enter your login</title>
 </head>
 <body class="antialiased">
@@ -42,7 +44,7 @@
 
                 <div class="text-sm text-gray-500 dark:text-gray-400">
                     <p>
-                        Enter some information about the session length or whatever you want.
+                        Enter your email address to request a login code.
                     </p>
                 </div>
 

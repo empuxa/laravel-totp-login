@@ -1,18 +1,16 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     {{-- (Force latest IE rendering engine: bit.ly/1c8EiC9 --}}
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta http-equiv="content-language" content="{{ app()->getLocale() }}">
 
     <title>Enter your code</title>
 
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <script>
-        const totp_code_length = {{ config('totp-login.code.length') }};
-    </script>
+    <link rel="stylesheet" href="{{ asset('vendor/totp-login/login.css') }}">
+    <script defer src="{{ asset('vendor/totp-login/login.js') }}"></script>
 </head>
 <body class="antialiased">
 <div class="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 mx-5 space-y-6 sm:space-y-10">
@@ -21,10 +19,10 @@
             Enter your code
         </h1>
         <p class="text-sm text-center text-gray-600 dark:text-gray-200 max-w">
-            Blabla …
+            {{ session('message', __('totp-login::controller.handle_identifier_request.success')) }}
         </p>
 
-        <form action="{{ route('totp-login.code.handle') }}" method="POST">
+        <form action="{{ route('totp-login.code.handle') }}" method="POST" x-data="code({{ (int) config('totp-login.code.length') }})" @paste="paste($event)">
             @csrf
 
             <div class="space-y-6" role="region" aria-label="Enter code">
@@ -49,20 +47,19 @@
                 @enderror
 
                 {{-- Code inputs --}}
-                <div class="flex justify-center" x-data="code()">
-                    <template x-for="(l,i) in totp_code_length" :key="`code_field_${i}`">
+                <div class="flex justify-center" >
+                    <template x-for="(l,i) in length" :key="`code_field_${i}`">
                         <input :id="`code_field_${i}`"
                                :autofocus="i === 0"
                                :aria-label="`Code Element ${i + 1}`"
-                               class="h-16 lg:h-20 w-12 lg:w-16 border border-gray-300 dark:border-gray-600 mx-1 rounded-md flex items-center text-center text-3xl lg:text-4xl text-gray-900 bg-transparent dark:text-gray-200 uppercase focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                               class="h-16 lg:h-20 min-w-0 w-10 sm:w-12 lg:w-16 border border-gray-300 dark:border-gray-600 mx-1 rounded-md flex items-center text-center text-3xl lg:text-4xl text-gray-900 bg-transparent dark:text-gray-200 uppercase focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
                                value=""
                                name="code[]"
                                maxlength="1"
                                inputmode="numeric"
-                               @keyup="stepForward(i)"
-                               @keydown.backspace="stepBack(i)"
+                               @input="stepForward(i)"
+                               @keydown.backspace.prevent="stepBack(i)"
                                @focus="resetValue(i)"
-                               autofocus
                                required
                         >
                     </template>
@@ -73,6 +70,7 @@
                     <div class="flex items-center" x-data="{ remember: true }">
                         <button type="button"
                                 role="switch"
+                                x-ref="switch"
                                 aria-labelledby="remember"
                                 :aria-checked="remember.toString()"
                                 :value="remember.toString()"
@@ -81,7 +79,7 @@
                                 @click="remember = !remember"
                         >
                             <span class="sr-only">
-                                {{ __('views/auth.totp.remember', ['days' => 30]) }}
+                                Remember me
                             </span>
                             <span aria-hidden="true"
                                   :class="{ 'translate-x-0': !remember, 'translate-x-5': remember }"
@@ -92,7 +90,7 @@
                         <span class="ml-5 flex-grow flex flex-col" id="remember"
                               @click="remember = !remember; $refs.switch.focus()">
                             <span class="font-medium text-default">
-                                Info text regarding remember me…
+                                Remember me
                             </span>
                         </span>
                         <input type="hidden" value="false" name="remember" :value="remember"/>
@@ -116,68 +114,7 @@
             </form>
         </div>
 
-        <script>
-            window.addEventListener('load', function () {
-                const paste = document.querySelector('body');
 
-                paste.addEventListener('paste', (event) => {
-                    event.preventDefault();
-
-                    let paste = (event.clipboardData || window.clipboardData).getData('text');
-
-                    paste = paste.replace(/\s+/g, '');
-
-                    if (isNaN(parseInt(paste)) || paste.length !== totp_code_length) {
-                        return;
-                    }
-
-                    for (let i = 0; i < paste.length; i++) {
-                        document.getElementById(`code_field_${i}`).value = paste[i];
-                    }
-
-                    document.getElementById(`submit`).focus();
-                    document.getElementById(`submit`).click();
-                });
-            });
-
-            function code() {
-                return {
-                    resetValue(i) {
-                        for (let x = 0; x < totp_code_length; x++) {
-                            if (x >= i) document.getElementById(`code_field_${x}`).value = '';
-                        }
-                    },
-
-                    stepForward(i) {
-                        // Last input has been filled; there is no next input
-                        if (document.getElementById(`code_field_${i}`).value && i === totp_code_length - 1) {
-                            document.getElementById(`submit`).focus();
-                            return;
-                        }
-
-                        // Return if the next input is already filled (conflict with paste)
-                        if (document.getElementById(`code_field_${i + 1}`).value) {
-                            return;
-                        }
-
-                        // Next input is empty
-                        if (document.getElementById(`code_field_${i}`).value && i !== totp_code_length - 1) {
-                            document.getElementById(`code_field_${i + 1}`).focus();
-                            document.getElementById(`code_field_${i + 1}`).value = '';
-                        }
-                    },
-
-                    stepBack(i) {
-                        if (i === 0) {
-                            return;
-                        }
-
-                        document.getElementById(`code_field_${i - 1}`).focus();
-                        document.getElementById(`code_field_${i - 1}`).value = '';
-                    }
-                }
-            }
-        </script>
 
     </div>
 </div>

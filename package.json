@@ -1,0 +1,14 @@
+{
+  "name": "laravel-totp-login-assets",
+  "private": true,
+  "scripts": {
+    "build": "tailwindcss -i resources/css/login.css -o resources/dist/login.css --minify && esbuild resources/js/login.js --bundle --minify --outfile=resources/dist/login.js --legal-comments=eof",
+    "test:browser": "php tests/browser/render.php && playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "alpinejs": "3.17.2",
+    "esbuild": "0.28.2",
+    "tailwindcss": "3.4.19"
+  }
+}
