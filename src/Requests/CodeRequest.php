@@ -80,13 +80,17 @@ class CodeRequest extends BaseRequest
             $this->user = $this->getUserModel(session(config('totp-login.columns.identifier')), true);
 
             $this->ensureIsNotRateLimited();
+
             if (is_null($this->user)) {
                 $this->validateCode();
             }
+
             if (now() >= $this->user->{config('totp-login.columns.code_valid_until')}) {
                 return true;
             }
+
             $this->validateCode();
+
             ResetLoginCode::dispatchSync($this->user);
 
             return false;
@@ -159,6 +163,7 @@ class CodeRequest extends BaseRequest
         $identifierRequest = IdentifierRequest::create('/', 'POST', [
             config('totp-login.columns.identifier') => $this->user->{config('totp-login.columns.identifier')},
         ], [], [], ['REMOTE_ADDR' => $this->ip()]);
+
         try {
             $identifierRequest->ensureIsNotRateLimited();
             CreateAndSendLoginCode::dispatchSync($this->user, $this->ip(), true);
@@ -206,6 +211,7 @@ class CodeRequest extends BaseRequest
         $this->formatCode();
 
         $storedHash = $this->user?->{config('totp-login.columns.code')};
+
         // A dummy must use the configured algorithm; bcrypt hashes are rejected
         // by Laravel's Argon drivers. Missing hashes never authenticate a user.
         $hashCheckResult = Hash::check(

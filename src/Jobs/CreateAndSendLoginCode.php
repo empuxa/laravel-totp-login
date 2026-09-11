@@ -29,6 +29,7 @@ class CreateAndSendLoginCode
     public function handle(): void
     {
         $connection = $this->user->getConnection();
+
         // Defer the entire operation when the caller owns a transaction. A rollback
         // must neither send a message nor leave a cache reservation behind.
         if ($connection->transactionLevel() > 0) {
@@ -40,8 +41,11 @@ class CreateAndSendLoginCode
         $key = 'totp-login:send:' . hash('sha256', Str::lower(
             (string) $this->user->{config('totp-login.columns.identifier')}
         ));
+
         $throttled = config('totp-login.identifier.enable_throttling', true) !== false;
+
         $lock = $throttled ? Cache::lock($key . ':lock', 120) : null;
+
         if ($lock && ! $lock->get()) {
             return;
         }
@@ -70,10 +74,13 @@ class CreateAndSendLoginCode
 
             if ($result !== null) {
                 [$user, $code] = $result;
+
                 $notification = config('totp-login.notification');
                 $columns = config('totp-login.columns');
+
                 $issuedHash = $user->getRawOriginal($columns['code']);
                 $issuedId = $user->getKey();
+
                 try {
                     $user->notify(new $notification($code, $this->ip));
                 } catch (Throwable $exception) {
@@ -83,6 +90,7 @@ class CreateAndSendLoginCode
                     $updated = $user->newQuery()->whereKey($issuedId)
                         ->where($columns['code'], $issuedHash)
                         ->update([$columns['code_valid_until'] => $expiredAt]);
+
                     if ($updated > 0) {
                         $this->user->{$columns['code_valid_until']} = $expiredAt;
                     }
