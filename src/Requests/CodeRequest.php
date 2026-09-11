@@ -165,7 +165,15 @@ class CodeRequest extends BaseRequest
         $event = config('totp-login.events.code_expired', CodeExpired::class);
         event(new $event($this->user, $this));
 
-        CreateAndSendLoginCode::dispatchSync($this->user, $this->ip(), true);
+        $identifierRequest = IdentifierRequest::create('/', 'POST', [
+            config('totp-login.columns.identifier') => $this->user->{config('totp-login.columns.identifier')},
+        ], [], [], ['REMOTE_ADDR' => $this->ip()]);
+        try {
+            $identifierRequest->ensureIsNotRateLimited();
+            CreateAndSendLoginCode::dispatchSync($this->user, $this->ip(), true);
+        } catch (ValidationException) {
+            // Keep the expired-code response neutral when resend is limited.
+        }
 
         throw ValidationException::withMessages([
             'code' => __('totp-login::controller.handle_code_request.error.expired'),

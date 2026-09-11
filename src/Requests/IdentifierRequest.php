@@ -46,8 +46,6 @@ class IdentifierRequest extends BaseRequest
         // the user exists (e.g., via 'exists:users,email' rule in config).
         $this->checkIfUserExists();
 
-        RateLimiter::clear($this->throttleKey());
-
         session()->forget('rate_limited_identifier_' . $this->throttleKey());
     }
 
@@ -60,7 +58,12 @@ class IdentifierRequest extends BaseRequest
             return;
         }
 
-        if (! RateLimiter::tooManyAttempts($this->throttleKey(), config('totp-login.identifier.max_attempts') - 1)) {
+        $accountAttempts = RateLimiter::hit($this->throttleKey());
+        $ipKey = 'totp-login:request-ip:' . hash('sha256', (string) $this->ip());
+        $ipAttempts = RateLimiter::hit($ipKey);
+
+        if ($accountAttempts <= config('totp-login.identifier.max_attempts') - 1
+            && $ipAttempts <= config('totp-login.identifier.max_attempts_per_ip', 20)) {
             return;
         }
 
@@ -103,8 +106,6 @@ class IdentifierRequest extends BaseRequest
             return;
         }
 
-        RateLimiter::hit($this->throttleKey());
-
         $event = config('totp-login.events.user_not_found', UserNotFound::class);
         event(new $event(null, $this));
 
@@ -115,8 +116,6 @@ class IdentifierRequest extends BaseRequest
 
     public function throttleKey(): string
     {
-        // Throttle key includes IP address to prevent user enumeration attacks.
-        // An attacker could otherwise test multiple identifiers from the same IP.
-        return Str::lower($this->input(config('totp-login.columns.identifier'))) . '|' . $this->ip();
+        return 'totp-login:request-account:' . hash('sha256', Str::lower($this->input(config('totp-login.columns.identifier'))));
     }
 }

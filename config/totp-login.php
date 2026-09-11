@@ -59,6 +59,12 @@ return [
          */
         'max_attempts'      => 5,
 
+        // Shared across identifiers requested from the same IP.
+        'max_attempts_per_ip' => 20,
+
+        // Minimum seconds between messages to the same account.
+        'resend_cooldown' => 30,
+
         /**
          * Validation rules for the identifier, typically an email.
          * Default: 'required|string|email'
