@@ -35,32 +35,34 @@ describe('CodeRequest', function () {
         expect($formatted)->toBe('12345678');
     });
 
-    it('generates throttle key using user identifier', function () {
-        $user = createUser(['email' => 'TEST@EXAMPLE.COM']);
-
+    it('keeps a stable account key when its identifier or the session input changes', function () {
+        $user = createUser();
         $request = new CodeRequest;
         $request->user = $user;
+        session(['email' => 'first@example.com']);
+        $key = $request->throttleKey();
+        $user->email = 'changed@example.com';
+        session(['email' => 'second@example.com']);
 
-        $throttleKey = $request->throttleKey();
-
-        // Should be lowercase identifier
-        expect($throttleKey)->toBe('totp-login:code:' . hash('sha256', 'test@example.com'));
+        expect($request->throttleKey())->toBe($key)->toStartWith('totp-login:code:account:');
+        expect($key)->not->toContain('example.com');
     });
 
-    it('throttle key is case-insensitive', function () {
-        $user1 = createUser(['email' => 'TEST@example.com']);
-        $user2 = createUser(['email' => 'test@EXAMPLE.com']);
+    it('does not share limits between distinct accounts with similar identifiers', function () {
+        $first = new CodeRequest;
+        $first->user = createUser(['email' => 'TEST@example.com']);
+        $second = new CodeRequest;
+        $second->user = createUser(['email' => 'test@example.com']);
+        expect($first->throttleKey())->not->toBe($second->throttleKey());
+    });
 
-        $request1 = new CodeRequest;
-        $request1->user = $user1;
-
-        $request2 = new CodeRequest;
-        $request2->user = $user2;
-
-        $key1 = $request1->throttleKey();
-        $key2 = $request2->throttleKey();
-
-        // Both should be lowercase
-        expect($key1)->toBe($key2)->not->toContain('example.com');
+    it('normalizes unknown identifiers without sharing known account keys', function () {
+        $request = new CodeRequest;
+        session(['email' => 'TEST@example.com']);
+        $key = $request->throttleKey();
+        session(['email' => 'test@example.com']);
+        expect($request->throttleKey())->toBe($key)->toStartWith('totp-login:code:identifier:');
+        $request->user = createUser(['email' => 'test@example.com']);
+        expect($request->throttleKey())->not->toBe($key);
     });
 });

@@ -25,7 +25,9 @@ it('allows exactly the configured number of incorrect codes', function (int $lim
     config(['totp-login.code.max_attempts' => $limit]);
     $user = createUser();
     session(['email' => $user->email]);
-    $key = (new CodeRequest)->throttleKey();
+    $request = new CodeRequest;
+    $request->user = $user;
+    $key = $request->throttleKey();
     for ($i = 1; $i <= $limit; $i++) {
         $this->post(route('totp-login.code.handle'), ['code' => str_split('999999')])->assertSessionHasErrors('code');
         expect(RateLimiter::attempts($key))->toBe($i);

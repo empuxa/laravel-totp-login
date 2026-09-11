@@ -238,8 +238,20 @@ class CodeRequest extends BaseRequest
 
     public function throttleKey(): string
     {
-        return 'totp-login:code:' . hash('sha256', Str::lower(
-            (string) session(config('totp-login.columns.identifier'), $this->user?->{config('totp-login.columns.identifier')})
+        if ($this->user !== null) {
+            $connection = $this->user->getConnection();
+            $identity = json_encode([
+                $connection->getName(),
+                $connection->getDatabaseName(),
+                $connection->getTablePrefix() . $this->user->getTable(),
+                (string) $this->user->getKey(),
+            ], JSON_THROW_ON_ERROR);
+
+            return 'totp-login:code:account:' . hash('sha256', $identity);
+        }
+
+        return 'totp-login:code:identifier:' . hash('sha256', Str::lower(
+            (string) session(config('totp-login.columns.identifier'))
         ));
     }
 }

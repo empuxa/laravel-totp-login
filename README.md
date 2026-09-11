@@ -91,7 +91,7 @@ Use a shared cache supporting atomic locks across application instances, and a s
 - Merge the new IP-limit and cooldown settings into published configuration. Successful requests now count; five configured failed code attempts now means exactly five.
 - Republish assets with `php artisan vendor:publish --tag=totp-login-assets --force` after package upgrades. Merge the new local asset references and Alpine component markup into customized published views; do not overwrite those views blindly.
 - Identifier submissions return the same confirmation and code-form redirect for known, unknown and limited accounts. Invalid/expired/limited codes share the `handle_code_request.error.invalid` translation. Internal events still distinguish failures. Avoid account-existence validation rules such as `exists:users,email` if you need neutral responses; custom rules and listeners can reintroduce that signal.
-- Rate-limit cache keys now have a package namespace and a hashed identifier. Old counters are not migrated and expire naturally.
+- Rate-limit cache keys now have a package namespace. Code-attempt limits use the resolved account’s database/table/primary-key identity; only unknown accounts use a hashed session identifier. Request limits use hashed identifiers. Old counters are not migrated and expire naturally.
 - `BaseRequest::getAuthenticatedUser(): ?Model` exposes the resolved model. `authenticate(): void` remains unchanged. Validation now consumes a successful code before the controller logs in; custom controllers must not perform a second reset.
 - No new database columns are needed. The default notification accepts an expiry date with or without an Eloquent datetime cast.
 
