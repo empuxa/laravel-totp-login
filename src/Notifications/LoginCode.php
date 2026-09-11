@@ -4,6 +4,7 @@ namespace Empuxa\TotpLogin\Notifications;
 
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Carbon;
 
 class LoginCode extends Notification
 {
@@ -38,7 +39,8 @@ class LoginCode extends Notification
             'code'        => $this->code,
             'ip'          => $this->ip,
             'valid_until' => $notifiable->{config('totp-login.columns.code_valid_until')}
-                ?->tz(self::getUserTimeZone($notifiable)),
+                ? Carbon::parse($notifiable->{config('totp-login.columns.code_valid_until')})->tz(self::getUserTimeZone($notifiable))
+                : null,
         ];
 
         return (new MailMessage)

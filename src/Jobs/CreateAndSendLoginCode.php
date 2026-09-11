@@ -11,7 +11,11 @@ class CreateAndSendLoginCode
     use Dispatchable;
     use SerializesModels;
 
-    public function __construct(public $user, public readonly string $ip = '') {}
+    public function __construct(
+        public $user,
+        public readonly string $ip = '',
+        public readonly bool $onlyIfExpired = false,
+    ) {}
 
     /**
      * Generates a random TOTP code, hashes it, stores it in the database, and sends it to the user.
@@ -21,15 +25,26 @@ class CreateAndSendLoginCode
      */
     public function handle(): void
     {
-        $columns = config('totp-login.columns');
-        $notification = config('totp-login.notification');
-        $code = self::createCode();
+        $connection = $this->user->getConnection();
+        $connection->transaction(function () use ($connection): void {
+            $columns = config('totp-login.columns');
+            $user = $this->user->newQuery()->whereKey($this->user->getKey())->lockForUpdate()->firstOrFail();
 
-        $this->user->{$columns['code']} = Hash::make($code);
-        $this->user->{$columns['code_valid_until']} = now()->addSeconds(config('totp-login.code.expires_in'));
-        $this->user->saveQuietly();
+            if ($this->onlyIfExpired && now() < $user->{$columns['code_valid_until']}) {
+                return;
+            }
 
-        $this->user->notify(new $notification($code, $this->ip));
+            $code = self::createCode();
+            $user->{$columns['code']} = Hash::make($code);
+            $user->{$columns['code_valid_until']} = now()->addSeconds(config('totp-login.code.expires_in'));
+            $user->saveQuietly();
+            $this->user->setRawAttributes($user->getAttributes(), true);
+
+            $connection->afterCommit(function () use ($user, $code): void {
+                $notification = config('totp-login.notification');
+                $user->notify(new $notification($code, $this->ip));
+            });
+        });
     }
 
     /**

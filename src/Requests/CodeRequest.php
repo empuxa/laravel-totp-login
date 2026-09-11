@@ -75,18 +75,26 @@ class CodeRequest extends BaseRequest
         }
 
         // Validate and consume under the same row lock on the model's connection.
-        (new (config('totp-login.model')))->getConnection()->transaction(function (): void {
+        $expired = (new (config('totp-login.model')))->getConnection()->transaction(function (): bool {
             $this->user = $this->getUserModel(session(config('totp-login.columns.identifier')), true);
 
             if (is_null($this->user)) {
-                return;
+                throw ValidationException::withMessages(['code' => __('auth.failed')]);
             }
 
             $this->ensureIsNotRateLimited();
-            $this->ensureCodeIsNotExpired();
+            if (now() >= $this->user->{config('totp-login.columns.code_valid_until')}) {
+                return true;
+            }
             $this->validateCode();
             ResetLoginCode::dispatchSync($this->user);
+
+            return false;
         });
+
+        if ($expired) {
+            $this->ensureCodeIsNotExpired();
+        }
 
         RateLimiter::clear($this->throttleKey());
 
@@ -157,10 +165,7 @@ class CodeRequest extends BaseRequest
         $event = config('totp-login.events.code_expired', CodeExpired::class);
         event(new $event($this->user, $this));
 
-        // Send a new PIN for better UX.
-        // SECURITY NOTE: This convenience feature could be abused for spam. Consider adding
-        // additional rate limiting if you notice abuse patterns in your logs.
-        CreateAndSendLoginCode::dispatch($this->user, $this->ip());
+        CreateAndSendLoginCode::dispatchSync($this->user, $this->ip(), true);
 
         throw ValidationException::withMessages([
             'code' => __('totp-login::controller.handle_code_request.error.expired'),
