@@ -78,11 +78,12 @@ class CodeRequest extends BaseRequest
         $expired = (new (config('totp-login.model')))->getConnection()->transaction(function (): bool {
             $this->user = $this->getUserModel(session(config('totp-login.columns.identifier')), true);
 
-            if (is_null($this->user)) {
-                throw ValidationException::withMessages(['code' => __('auth.failed')]);
-            }
-
             $this->ensureIsNotRateLimited();
+            if (is_null($this->user)) {
+                Hash::check($this->formatCode(), '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
+                RateLimiter::hit($this->throttleKey());
+                throw ValidationException::withMessages(['code' => __('totp-login::controller.handle_code_request.error.invalid')]);
+            }
             if (now() >= $this->user->{config('totp-login.columns.code_valid_until')}) {
                 return true;
             }
@@ -144,12 +145,7 @@ class CodeRequest extends BaseRequest
         }
 
         throw ValidationException::withMessages([
-            // SECURITY NOTE: Displaying 'seconds' could help attackers time their attempts.
-            // We expose it by default for better UX, but you can easily hide this information
-            // by customizing the translation to show a generic message instead.
-            'code' => __('totp-login::controller.handle_code_request.error.rate_limit', [
-                'seconds' => RateLimiter::availableIn($this->throttleKey()),
-            ]),
+            'code' => __('totp-login::controller.handle_code_request.error.invalid'),
         ]);
     }
 
@@ -176,7 +172,7 @@ class CodeRequest extends BaseRequest
         }
 
         throw ValidationException::withMessages([
-            'code' => __('totp-login::controller.handle_code_request.error.expired'),
+            'code' => __('totp-login::controller.handle_code_request.error.invalid'),
         ]);
     }
 
@@ -255,22 +251,15 @@ class CodeRequest extends BaseRequest
         $event = config('totp-login.events.incorrect_code', IncorrectCode::class);
         event(new $event($this->user, $this));
 
-        // SECURITY NOTE: Displaying 'attempts_left' could help attackers optimize their strategy.
-        // We expose it by default for better UX, but you can easily hide this information
-        // by customizing the translation to show a generic message instead.
         throw ValidationException::withMessages([
-            'code' => __('totp-login::controller.handle_code_request.error.wrong_totp', [
-                'attempts_left' => config('totp-login.code.max_attempts') - RateLimiter::attempts(
-                    $this->throttleKey(),
-                ),
-            ]),
+            'code' => __('totp-login::controller.handle_code_request.error.invalid'),
         ]);
     }
 
     public function throttleKey(): string
     {
-        // Throttle key uses only the identifier (no IP) since the user is already identified.
-        // This prevents legitimate users from being locked out if their IP changes.
-        return Str::lower($this->user->{config('totp-login.columns.identifier')});
+        return 'totp-login:code:' . hash('sha256', Str::lower(
+            (string) session(config('totp-login.columns.identifier'), $this->user?->{config('totp-login.columns.identifier')})
+        ));
     }
 }

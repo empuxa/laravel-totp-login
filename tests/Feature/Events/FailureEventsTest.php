@@ -39,7 +39,7 @@ describe('Identifier Phase Failure Events', function () {
             config('totp-login.columns.identifier') => 'nonexistent@example.com',
         ]);
 
-        $response->assertSessionHasErrors();
+        $response->assertSessionHasNoErrors();
 
         $event = config('totp-login.events.user_not_found', UserNotFound::class);
         Event::assertDispatched($event, function ($e) {

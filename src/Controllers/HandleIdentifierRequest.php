@@ -23,17 +23,22 @@ class HandleIdentifierRequest extends Controller
 
         $identifierData = $request->input(config('totp-login.columns.identifier'));
 
-        $user = $request->getUserModel($identifierData);
+        $user = $request->allowedToSend ? $request->getUserModel($identifierData) : null;
 
-        CreateAndSendLoginCode::dispatch($user, $request->ip());
+        if ($user !== null) {
+            CreateAndSendLoginCode::dispatch($user, $request->ip());
+        }
 
         session([
             config('totp-login.columns.identifier') => $identifierData,
         ]);
 
         $event = config('totp-login.events.login_request_via_totp', LoginRequestViaTotp::class);
-        event(new $event($user, $request));
+        if ($user !== null) {
+            event(new $event($user, $request));
+        }
 
-        return redirect(route('totp-login.code.form'));
+        return redirect(route('totp-login.code.form'))
+            ->with('message', __('totp-login::controller.handle_identifier_request.success'));
     }
 }

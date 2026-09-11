@@ -26,7 +26,7 @@ it('limits requests from one IP across different accounts', function () {
     config(['totp-login.identifier.max_attempts_per_ip' => 1]);
     $user = createUser();
     $this->post(route('totp-login.identifier.handle'), ['email' => 'unknown@example.com']);
-    $this->post(route('totp-login.identifier.handle'), ['email' => $user->email])->assertSessionHasErrors('email');
+    $this->post(route('totp-login.identifier.handle'), ['email' => $user->email])->assertSessionHasNoErrors();
     Notification::assertNothingSent();
 });
 

@@ -1,7 +1,6 @@
 <?php
 
 use Empuxa\TotpLogin\Requests\CodeRequest;
-use Illuminate\Support\Str;
 
 describe('CodeRequest', function () {
     it('formats code from array to string', function () {
@@ -45,8 +44,7 @@ describe('CodeRequest', function () {
         $throttleKey = $request->throttleKey();
 
         // Should be lowercase identifier
-        expect($throttleKey)->toBe('test@example.com');
-        expect($throttleKey)->toBe(Str::lower($user->{config('totp-login.columns.identifier')}));
+        expect($throttleKey)->toBe('totp-login:code:' . hash('sha256', 'test@example.com'));
     });
 
     it('throttle key is case-insensitive', function () {
@@ -63,7 +61,6 @@ describe('CodeRequest', function () {
         $key2 = $request2->throttleKey();
 
         // Both should be lowercase
-        expect($key1)->toBe('test@example.com');
-        expect($key2)->toBe('test@example.com');
+        expect($key1)->toBe($key2)->not->toContain('example.com');
     });
 });

@@ -14,6 +14,8 @@ use Illuminate\Validation\ValidationException;
 
 class IdentifierRequest extends BaseRequest
 {
+    public bool $allowedToSend = true;
+
     /**
      * @return array<int|string, mixed>
      */
@@ -40,7 +42,13 @@ class IdentifierRequest extends BaseRequest
      */
     public function authenticate(): void
     {
-        $this->ensureIsNotRateLimited();
+        try {
+            $this->ensureIsNotRateLimited();
+        } catch (ValidationException) {
+            $this->allowedToSend = false;
+
+            return;
+        }
 
         // This check might not be required if your validation rules already ensure
         // the user exists (e.g., via 'exists:users,email' rule in config).
@@ -109,9 +117,6 @@ class IdentifierRequest extends BaseRequest
         $event = config('totp-login.events.user_not_found', UserNotFound::class);
         event(new $event(null, $this));
 
-        throw ValidationException::withMessages([
-            config('totp-login.columns.identifier') => __('auth.failed'),
-        ]);
     }
 
     public function throttleKey(): string

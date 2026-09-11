@@ -31,7 +31,8 @@ it('does not send email to user with wrong email', function () {
         config('totp-login.columns.identifier') => 'not_existing@example.com',
     ]);
 
-    $response->assertSessionHasErrors('email', __('auth.failed'));
+    $response->assertSessionHasNoErrors();
+    $response->assertRedirect(route('totp-login.code.form'));
 
     expect(Auth::check())->toBeFalse();
 
