@@ -3,7 +3,6 @@
 namespace Empuxa\TotpLogin\Controllers;
 
 use Empuxa\TotpLogin\Events\LoggedInViaTotp;
-use Empuxa\TotpLogin\Jobs\ResetLoginCode;
 use Empuxa\TotpLogin\Requests\CodeRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Routing\Controller;
@@ -50,8 +49,6 @@ class HandleCodeRequest extends Controller
         $request->session()->regenerate();
 
         Auth::login($this->user, $request->input('remember') === 'true');
-
-        ResetLoginCode::dispatch($this->user);
 
         $event = config('totp-login.events.logged_in_via_totp', LoggedInViaTotp::class);
         event(new $event($this->user, $request));

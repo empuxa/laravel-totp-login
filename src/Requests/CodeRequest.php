@@ -12,9 +12,9 @@ use Empuxa\TotpLogin\Events\MissingSessionInformation;
 use Empuxa\TotpLogin\Exceptions\MissingCode as MissingCodeException;
 use Empuxa\TotpLogin\Exceptions\MissingSessionInformation as MissingSessionInformationException;
 use Empuxa\TotpLogin\Jobs\CreateAndSendLoginCode;
+use Empuxa\TotpLogin\Jobs\ResetLoginCode;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\Validator;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -74,14 +74,8 @@ class CodeRequest extends BaseRequest
             throw new MissingCodeException;
         }
 
-        // RACE CONDITION PREVENTION:
-        // Use database transaction with pessimistic row locking for atomic code validation.
-        // Without this, two concurrent requests could both validate the same code successfully.
-        // The transaction + lockForUpdate() ensures only ONE request can validate at a time.
-        DB::transaction(function (): void {
-            // Acquire row-level lock on user record - held until transaction commits/rolls back.
-            // The lock=true parameter enables database row locking, which is critical for preventing
-            // race conditions where two simultaneous requests could validate the same code.
+        // Validate and consume under the same row lock on the model's connection.
+        (new (config('totp-login.model')))->getConnection()->transaction(function (): void {
             $this->user = $this->getUserModel(session(config('totp-login.columns.identifier')), true);
 
             if (is_null($this->user)) {
@@ -91,6 +85,7 @@ class CodeRequest extends BaseRequest
             $this->ensureIsNotRateLimited();
             $this->ensureCodeIsNotExpired();
             $this->validateCode();
+            ResetLoginCode::dispatchSync($this->user);
         });
 
         RateLimiter::clear($this->throttleKey());

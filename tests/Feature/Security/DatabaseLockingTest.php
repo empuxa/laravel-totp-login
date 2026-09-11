@@ -210,3 +210,21 @@ describe('Database Row Locking', function () {
         expect(Auth::check())->toBeFalse();
     });
 });
+
+it('consumes the code before authentication returns to the controller', function () {
+    $user = createUser();
+    session(['email' => $user->email]);
+    $request = \Empuxa\TotpLogin\Requests\CodeRequest::create('/login/code', 'POST', [
+        'code' => str_split('123456'),
+    ]);
+
+    $request->authenticate();
+
+    expect(now()->greaterThan($user->fresh()->login_totp_code_valid_until))->toBeTrue();
+    expect(auth()->check())->toBeFalse();
+    $second = \Empuxa\TotpLogin\Requests\CodeRequest::create('/login/code', 'POST', [
+        'code' => str_split('123456'),
+    ]);
+    \Illuminate\Support\Facades\Notification::fake();
+    expect(fn () => $second->authenticate())->toThrow(\Illuminate\Validation\ValidationException::class);
+});
