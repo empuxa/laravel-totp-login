@@ -12,7 +12,7 @@ use Illuminate\Validation\ValidationException;
 class HandleIdentifierRequest extends Controller
 {
     /**
-     * Handles the first step of TOTP authentication: identifier (email/phone) submission.
+     * Handles the first step of OTP authentication: identifier (email/phone) submission.
      * Validates the identifier, generates a code, sends it to the user, and stores
      * the identifier in session for the second step (code verification).
      *

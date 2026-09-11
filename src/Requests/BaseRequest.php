@@ -23,7 +23,7 @@ class BaseRequest extends FormRequest
         $query = config('totp-login.model')::query();
 
         // Optional: Define a totpLoginScope() method on your User model to filter which users
-        // can use TOTP login (e.g., only active users, specific roles, etc.).
+        // can use OTP login (e.g., only active users, specific roles, etc.).
         // Example: public static function totpLoginScope() { return static::where('active', true); }
         if (method_exists(config('totp-login.model'), 'totpLoginScope')) {
             $query = config('totp-login.model')::totpLoginScope();

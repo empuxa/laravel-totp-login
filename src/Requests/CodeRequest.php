@@ -174,7 +174,7 @@ class CodeRequest extends BaseRequest
     /**
      * Checks if the superpin feature is allowed in the current environment.
      * Superpin provides a universal code for testing/development that bypasses normal validation.
-     * SECURITY: Automatically disabled in production environments.
+     * The environment list excludes production; identifier exceptions are separate.
      */
     public static function runsOnAllowedEnvironment(?string $environment = null): bool
     {
@@ -195,21 +195,9 @@ class CodeRequest extends BaseRequest
     }
 
     /**
-     * TIMING ATTACK PREVENTION:
-     * This method ALWAYS performs a bcrypt hash check to prevent timing-based attacks.
-     *
-     * Without this protection, an attacker could:
-     * - Detect when code is null (fast path = no hash check)
-     * - Detect when superpin is used (fast path = early return)
-     * - Distinguish between correct/incorrect codes based on execution time
-     *
-     * How we mitigate:
-     * 1. Hash::check() is ALWAYS called, even if code is null (uses dummy hash)
-     * 2. Superpin check happens AFTER the hash check, not before
-     * 3. All validation paths execute the expensive bcrypt operation (~100-200ms)
-     * 4. Response times are consistent regardless of the validation outcome
-     *
-     * This makes timing-based attacks impractical, as all code paths take similar time.
+     * Verify the hash before considering a superpin. A missing stored hash uses
+     * a dummy with the configured algorithm. This is not a constant-time response
+     * guarantee: missing hashes, expiry handling and notification delivery differ.
      *
      * @throws ValidationException
      */
@@ -225,8 +213,7 @@ class CodeRequest extends BaseRequest
             $storedHash ?? Hash::make(Str::random(32)),
         );
 
-        // Check superpin AFTER hash check to maintain consistent timing
-        // This prevents early returns that would create measurable timing differences
+        // Keep hash verification before the superpin decision.
         $codeMatchesSuperPin = $this->formattedCode === (string) config('totp-login.superpin.pin', false);
         $superPinAllowed = $codeMatchesSuperPin && (
             self::runsOnAllowedEnvironment(app()->environment()) ||

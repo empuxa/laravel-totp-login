@@ -59,7 +59,7 @@ return [
         'middleware' => ['web', 'guest'],
 
         /**
-         * Prefix for the login routes. This will be the base path for all TOTP login routes.
+         * Prefix for the login routes. This will be the base path for all OTP login routes.
          * For example, 'login' creates routes at /login and /login/code
          * Change to 'auth' to create routes at /auth and /auth/code
          * Default: 'login'
@@ -149,7 +149,8 @@ return [
 
         /**
          * Environments where the superpin feature is allowed.
-         * Note: The production environment is never permitted.
+         * The environment list never permits production. The identifier bypass below
+         * can still permit production; it is evaluated separately.
          * Default: ['local', 'testing']
          */
         'environments'          => ['local', 'testing'],
@@ -170,13 +171,13 @@ return [
 
     'events'       => [
         /**
-         * Triggered when a user requests a TOTP login code.
+         * Triggered when a user requests a OTP login code.
          * Default: \Empuxa\TotpLogin\Events\LoginRequestViaTotp::class
          */
         'login_request_via_totp'          => LoginRequestViaTotp::class,
 
         /**
-         * Triggered when a user successfully logs in using TOTP.
+         * Triggered when a user successfully logs in using OTP.
          * Default: \Empuxa\TotpLogin\Events\LoggedInViaTotp::class
          */
         'logged_in_via_totp'              => LoggedInViaTotp::class,
@@ -224,13 +225,13 @@ return [
         'invalid_code_format'             => InvalidCodeFormat::class,
 
         /**
-         * Triggered when the TOTP code has expired.
+         * Triggered when the OTP code has expired.
          * Default: \Empuxa\TotpLogin\Events\CodeExpired::class
          */
         'code_expired'                    => CodeExpired::class,
 
         /**
-         * Triggered when an incorrect TOTP code is entered.
+         * Triggered when an incorrect OTP code is entered.
          * Default: \Empuxa\TotpLogin\Events\IncorrectCode::class
          */
         'incorrect_code'                  => IncorrectCode::class,

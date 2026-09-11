@@ -2,6 +2,17 @@
 
 All notable changes to `laravel-totp-login` will be documented in this file.
 
+## Unreleased
+
+- Consume successful codes within the validation transaction and persist replacement codes before sending them.
+- Limit successful requests and resends per account/IP; return neutral account and code responses.
+- Reuse resolved users, derive default validation from code length and allow the exact configured number of attempts.
+- Bundle local Alpine/Tailwind assets with browser coverage. Republish assets and merge customized views on upgrade.
+- Correct hash-path tests, support configured hash algorithms for missing codes, and document deferred database concurrency verification.
+- Update safe dependency minimums and add CI audits. Laravel 9–11 security support remains a documented release blocker; superpin exceptions remain unchanged.
+
+See the README's upgrade notes for changed responses, translations, cache keys and configuration defaults.
+
 ## v7.1.0 - 2026-02-28
 
 ### What's Changed

@@ -6,33 +6,31 @@
 
 ![Banner](https://banners.beyondco.de/Laravel%20TOTP%20Login.png?theme=light&packageManager=composer+require&packageName=empuxa%2Flaravel-totp-login&pattern=architect&style=style_1&description=Goodbye+passwords%21&md=1&showWatermark=0&fontSize=100px&images=https%3A%2F%2Flaravel.com%2Fimg%2Flogomark.min.svg)
 
-Say goodbye to passwords and sign in via a time-based one-time password instead! 
-Laravel TOTP Login is a convenient package that allows you to easily add a TOTP login feature to your Laravel application.
+Laravel TOTP Login provides passwordless login using a randomly generated, short-lived one-time code (OTP), delivered by email by default. It does **not** implement the shared-secret TOTP algorithm from RFC 6238 or authenticator-app codes. The package name, namespaces, routes and configuration keys remain unchanged.
 
 ## Why Choose Laravel TOTP Login?
-You might wonder why you should opt for a TOTP login instead of a magic link solution. 
-Well, this package is designed to complement the existing login methods in your application. 
-It provides an alternative sign-in option for users who haven't set a password yet or don't have an email address. 
-For instance, users who signed up with only a phone number can still enjoy the benefits of secure login through a TOTP.
+You might wonder why you should opt for an OTP login instead of a magic link solution.
+Well, this package is designed to complement the existing login methods in your application.
+It provides an alternative sign-in option for users who haven't set a password yet or don't have an email address.
+For instance, users who signed up with only a phone number can still enjoy the benefits of secure login through an OTP.
 
 ## Features
-- Simplified sign-in process using a TOTP
+- Simplified sign-in process using an OTP
 - Compatibility with existing login methods
 - Support for users without passwords or email addresses
 - Built-in security protections:
   - Rate limiting with progressive event tracking
-  - Timing attack prevention in code validation
-  - Race condition prevention with database locking
+  - Hash verification before code or superpin acceptance
+  - Code validation and consumption in one database transaction
   - Session fixation protection
 
 ![How it works](docs/animation.gif)
 
 ## Requirements
 
-In addition to Laravel v9.52 or newer, this package relies on [Alpine.js](https://alpinejs.dev/).
-If you're using [Laravel LiveWire](https://laravel-livewire.com/), you are already good to go.
-Otherwise, ensure to include Alpine.js in your application.
-Also, you need to have a notifiable user model.
+Use PHP 8.2+ and a notifiable, authenticatable Eloquent user model. Laravel 12 requires at least 12.61.1; Laravel 13 requires at least 13.12.0 and its own PHP minimum. The legacy Laravel 9–11 constraints remain for compatibility, but known unpatched framework advisories are a **release blocker for those versions**; see [Security Policy](SECURITY.md).
+
+The standard views include their own local Alpine bundle and compiled Tailwind CSS. Publish the assets during installation; no Node build or separate Alpine installation is required in the consuming application. If you integrate the form into an existing Alpine/Livewire layout, use that layout's Alpine instance and register the `code` component before it starts, rather than loading a second Alpine runtime.
 
 ## Installation
 
@@ -52,10 +50,11 @@ Adjust the config to your needs, then run the migrations:
 
 ```bash
 php artisan migrate
+php artisan vendor:publish --tag=totp-login-assets --force
 ```
 
 That's it!
-You're ready to start using the TOTP login feature in your Laravel application.
+You're ready to start using the OTP login feature in your Laravel application.
 
 ## Configuration
 
@@ -70,21 +69,47 @@ The package offers extensive configuration options in `config/totp-login.php`. K
 
 See the published [config file](/config/totp-login.php) for detailed explanations of all available options.
 
+### Limits and code validation
+
+| Setting | Default | Behavior |
+| --- | --- | --- |
+| `identifier.max_attempts` | 5 | Requests per account per 60-second window, including successful and unknown-account requests |
+| `identifier.max_attempts_per_ip` | 20 | Requests per IP across accounts per 60-second window |
+| `identifier.resend_cooldown` | 30 | Minimum seconds between messages to one account |
+| `code.max_attempts` | 5 | Failed code checks before the next attempt is blocked |
+| `code.length` | 6 | Number of digits generated and accepted by default |
+| `code.expires_in` | 600 | Code lifetime in seconds |
+| `code.validation` | `null` | Derive `required|array|size:<length>` at request time; explicit rules override this |
+
+Manual requests and automatic replacement of expired codes share account/IP limits and the send cooldown. A blocked resend does not change the stored code. Setting `identifier.enable_throttling` to `false` disables request limits and the send cooldown; `code.enable_throttling` controls code-attempt blocking separately.
+
+Use a shared cache supporting atomic locks across application instances, and a shared rate-limiter store. Configure trusted proxies correctly so client IPs cannot be spoofed. The send lock expires after 120 seconds; set notification transport timeouts below that lease. Avoid changing the cache prefix between instances.
+
+### Upgrading published configuration and views
+
+- Change the old `code.validation = 'required|array|size:6'` to `null` if validation should follow `code.length`. Existing explicit rules remain authoritative.
+- Merge the new IP-limit and cooldown settings into published configuration. Successful requests now count; five configured failed code attempts now means exactly five.
+- Republish assets with `php artisan vendor:publish --tag=totp-login-assets --force` after package upgrades. Merge the new local asset references and Alpine component markup into customized published views; do not overwrite those views blindly.
+- Identifier submissions return the same confirmation and code-form redirect for known, unknown and limited accounts. Invalid/expired/limited codes share the `handle_code_request.error.invalid` translation. Internal events still distinguish failures. Avoid account-existence validation rules such as `exists:users,email` if you need neutral responses; custom rules and listeners can reintroduce that signal.
+- Rate-limit cache keys now have a package namespace and a hashed identifier. Old counters are not migrated and expire naturally.
+- `BaseRequest::getAuthenticatedUser(): ?Model` exposes the resolved model. `authenticate(): void` remains unchanged. Validation now consumes a successful code before the controller logs in; custom controllers must not perform a second reset.
+- No new database columns are needed. The default notification accepts an expiry date with or without an Eloquent datetime cast.
+
 ## Usage
 
 The sign-in process for this repository involves three steps:
-1. Enter the user's email address, phone number, or any other specified identifier, and request a TOTP.
-2. If the entered information is valid, a TOTP will be sent to the user. You may need to customize the
+1. Enter the user's email address, phone number, or any other specified identifier, and request an OTP.
+2. If the entered information is valid, an OTP will be sent to the user. You may need to customize the
 notification channel based on the user model you are using.
-3. Enter the received TOTP to log in the user.
+3. Enter the received OTP to log in the user.
 
 ### Routes
 
-By default, the package registers the following routes under the `/login` prefix (you can change it in 
+By default, the package registers the following routes under the `/login` prefix (you can change it in
 the config):
 
 - `GET /login` - Show identifier entry form
-- `POST /login` - Handle identifier submission and send TOTP
+- `POST /login` - Handle identifier submission and send OTP
 - `GET /login/code` - Show code entry form
 - `POST /login/code` - Handle code verification and authenticate user
 
@@ -101,8 +126,7 @@ You can customize the route prefix in `config/totp-login.php`:
 
 #### Manual Route Registration
 
-If you need more control, you can disable automatic route registration and register routes manually in 
-your `routes/web.php`:
+The following shows equivalent route definitions for applications that replace the package provider’s route registration. The package does not expose a config switch to disable its automatic routes; avoid registering these alongside the default routes:
 
 ```php
 use Empuxa\TotpLogin\Controllers\HandleCodeRequest;
@@ -120,7 +144,7 @@ Route::prefix('auth')->group(static function (): void {
 
 ### Using Custom Identifiers
 
-By default, the package uses email addresses as identifiers. 
+By default, the package uses email addresses as identifiers.
 However, you can use any column from your user model (phone numbers, usernames, etc.):
 
 ```php
@@ -138,34 +162,29 @@ Make sure to update your validation rules accordingly:
 ],
 ```
 
-Don't forget to update the notification afterward to send SMS instead of mails! 
+Don't forget to update the notification afterward to send SMS instead of mails!
 
 ### Superpin for Testing
 
-During development and testing, you can enable a "superpin" that works for all users.
-While the superpin is always valid, the package still dispatches the notification, so you can use either 
-the superpin or the actual code sent to the user for login.
+A configured superpin can replace the individual code for testing:
 
 ```env
 TOTP_LOGIN_SUPERPIN=123456
 ```
 
-**Important**: Superpins are automatically disabled in production environments and only work in 
-environments specified in your config (default: `local`, `testing`). 
-You can also specify individual user identifiers that can bypass environment restrictions for staging/demo 
-purposes.
+By default it is disabled. When enabled, it works in the configured environments (`local`, `testing` by default). The environment list never permits `production`, **but `superpin.bypassing_identifiers` bypasses that restriction, including in production**. This behavior is unchanged.
 
-See `config/totp-login.php` for more superpin configuration options.
+A matching user, non-expired code state and applicable attempt limits are still required. Hash verification runs before accepting the superpin. Normal notification generation follows the same request limits and cooldown.
 
 ### Customizing the Views
 
 While the initial steps are relatively straightforward, it's now necessary to customize
-the views. 
+the views.
 These views have been designed to be as simple as possible (some might even consider them
 "ugly") and can be located in the `resources/views/vendor/totp-login` directory.
 
 *Why are they not visually appealing?*
-Different applications adopt various layouts and frameworks. 
+Different applications adopt various layouts and frameworks.
 Since you have the most knowledge about your application, you can change the views to suit
 your specific requirements.
 
@@ -175,16 +194,16 @@ The package publishes a default notification view at `resources/views/vendor/tot
 You may want to make adjustments to this notification to align it with your preferences and needs.
 
 #### Different Notification Channels
-If you plan on using SMS or similar as your preferred notification channel, you can create a custom 
+If you plan on using SMS or similar as your preferred notification channel, you can create a custom
 notification class.
-The TOTP and the user's IP address will be passed to the constructor of this class.
-Finally, replace the default notification class within the `config/totp-login.php` file with your custom 
+The OTP and the user's IP address will be passed to the constructor of this class.
+Finally, replace the default notification class within the `config/totp-login.php` file with your custom
 notification.
 
 ### Custom User Model Scope
 
-By default, the package looks up users without any additional filtering. 
-However, you might need to restrict which users can use TOTP login. 
+By default, the package looks up users without any additional filtering.
+However, you might need to restrict which users can use OTP login.
 Common use cases include:
 
 - Only allowing users with verified email addresses
@@ -226,8 +245,8 @@ The package dispatches various events throughout the authentication process,
 allowing you to monitor and respond to authentication attempts, failures, and rate limiting violations.
 
 ### Success Events
-- **`LoginRequestViaTotp`** - Fired when a user successfully requests a TOTP code
-- **`LoggedInViaTotp`** - Fired when a user successfully authenticates with a TOTP code
+- **`LoginRequestViaTotp`** - Fired for an eligible known-account request; it does not confirm delivery and may also fire when the send cooldown suppresses a message
+- **`LoggedInViaTotp`** - Fired when a user successfully authenticates with an OTP code
 
 ### Failure Events
 
@@ -241,20 +260,20 @@ allowing you to monitor and respond to authentication attempts, failures, and ra
 - **`MissingSessionInformation`** - Session expired or missing
 - **`MissingCodeData`** - Code data not properly submitted
 - **`InvalidCodeFormat`** - Invalid code format or length
-- **`CodeExpired`** - Valid code but expired
+- **`CodeExpired`** - Stored code state has expired, regardless of the submitted digits
 - **`IncorrectCode`** - Wrong code entered
 - **`CodeRateLimitExceeded`** - First time hitting code rate limit
 - **`CodeRateLimitContinued`** - Continued attempts after code rate limit hit
 
 ### Rate Limit Events
-- **`Lockout`** (Laravel's core event) - Fired alongside `*RateLimitExceeded` events to follow Laravel's 
+- **`Lockout`** (Laravel's core event) - Fired alongside `*RateLimitExceeded` events to follow Laravel's
 conventions and allow integration with existing Laravel authentication listeners
 
 ### Rate Limit Event Behavior
 
 The package distinguishes between initial rate limit violations and persistent abuse:
 
-1. **First rate limit hit**: Fires `CodeRateLimitExceeded` or `IdentifierRateLimitExceeded` 
+1. **First rate limit hit**: Fires `CodeRateLimitExceeded` or `IdentifierRateLimitExceeded`
 (package-specific) + `Lockout` (Laravel's standard event for rate limiting)
 2. **Subsequent attempts**: Fires `CodeRateLimitContinued` or `IdentifierRateLimitContinued`
 on each attempt (no `Lockout` event)
@@ -268,8 +287,8 @@ This allows you to:
 
 #### Using Event Subscriber (Recommended)
 
-The recommended approach is to use an event subscriber with config keys. 
-This way, if you customize the event classes in your config, your listeners will automatically use the 
+The recommended approach is to use an event subscriber with config keys.
+This way, if you customize the event classes in your config, your listeners will automatically use the
 correct events:
 
 ```php
@@ -334,7 +353,7 @@ protected $listen = [
 
 ### Customizing Events
 
-All events are configurable in `config/totp-login.php` under the `events` key. 
+All events are configurable in `config/totp-login.php` under the `events` key.
 You can replace the default event classes with your own custom implementations:
 
 ```php
@@ -348,14 +367,36 @@ You can replace the default event classes with your own custom implementations:
 ],
 ```
 
-When using the event subscriber approach with config keys (recommended), your listeners 
+When using the event subscriber approach with config keys (recommended), your listeners
 will automatically use these custom event classes without any changes to your subscriber.
 
-## Testing
+## Authentication guarantees and boundaries
+
+The configured model's connection wraps code lookup, validation and consumption in one transaction. A successful code is expired before the transaction releases its row lock. The controller reuses the validated user. Session regeneration rotates the session ID and CSRF token; it does not erase unrelated session data.
+
+Code creation and reset are synchronous jobs, not queued jobs. Creation invoked inside an existing transaction is deferred until that transaction commits. Code storage commits before notification delivery; a failed delivery releases the send reservation so a later request can try again. Custom notifications may introduce their own queue semantics.
+
+Neutral responses remove the direct account-existence signal, but are not a constant-time guarantee. Synchronous notification delivery, generating a dummy hash for missing codes, expiry handling and custom listeners can have different durations. Use the internal events for monitoring without exposing those distinctions to clients.
+
+## Testing and asset development
 
 ```bash
 composer test
+composer audit --locked
+npm ci
+npm run build
+npx playwright install chromium
+npm run test:browser
+npm audit
 ```
+
+Commit changes to the asset sources, `package-lock.json` and rebuilt `resources/dist` together. Bundled third-party licenses are in that directory; review them when upgrading Alpine or its Vue dependencies. CI rebuilds assets and rejects uncommitted output differences.
+
+PHP tests use SQLite, including regressions for code consumption, persisted replacement codes, limits and session behavior. The hash-path tests check real cryptographic verification, not a timing threshold. Browser tests load rendered Blade fixtures with local assets and check the forms at desktop/mobile sizes. They do not deliver real email.
+
+**Real concurrent MySQL/PostgreSQL tests are deferred.** Sequential SQLite tests do not demonstrate production-database locking under concurrent requests. No MySQL/PostgreSQL services or test jobs are included.
+
+CI tests both preferred-current and lowest securely resolvable dependencies. The library's Composer lockfile remains untracked; consuming applications must update and audit their own lockfiles. Do not disable Composer security blocking to force an unsupported legacy framework installation.
 
 ## Changelog
 

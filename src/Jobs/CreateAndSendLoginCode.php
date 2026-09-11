@@ -20,8 +20,8 @@ class CreateAndSendLoginCode
     ) {}
 
     /**
-     * Generates a random TOTP code, hashes it, stores it in the database, and sends it to the user.
-     * This job is dispatched synchronously (dispatch_sync) to send the code immediately.
+     * Generates a random OTP code, hashes it, stores it in the database, and sends it to the user.
+     * Synchronous unless deferred until an outer transaction commits; sends after storage commits.
      *
      * @throws \Exception
      */

@@ -1,6 +1,6 @@
 {
     "name": "empuxa/laravel-totp-login",
-    "description": "Say goodbye to passwords and sign in via TOTP instead.",
+    "description": "Passwordless login using short-lived one-time codes delivered by email.",
     "keywords": [
         "empuxa",
         "totp-login",
