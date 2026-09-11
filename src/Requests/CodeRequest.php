@@ -81,9 +81,7 @@ class CodeRequest extends BaseRequest
 
             $this->ensureIsNotRateLimited();
             if (is_null($this->user)) {
-                Hash::check($this->formatCode(), '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi');
-                RateLimiter::hit($this->throttleKey());
-                throw ValidationException::withMessages(['code' => __('totp-login::controller.handle_code_request.error.invalid')]);
+                $this->validateCode();
             }
             if (now() >= $this->user->{config('totp-login.columns.code_valid_until')}) {
                 return true;
@@ -219,14 +217,12 @@ class CodeRequest extends BaseRequest
     {
         $this->formatCode();
 
-        // TIMING ATTACK PREVENTION: Always perform hash check
-        // Even if code is null, we use a dummy bcrypt hash to maintain consistent timing
-        // This ensures all validation paths execute similar cryptographic operations
+        $storedHash = $this->user?->{config('totp-login.columns.code')};
+        // A dummy must use the configured algorithm; bcrypt hashes are rejected
+        // by Laravel's Argon drivers. Missing hashes never authenticate a user.
         $hashCheckResult = Hash::check(
             $this->formattedCode,
-            $this->user->{config('totp-login.columns.code')}
-                // dummy hash
-                ?? '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'
+            $storedHash ?? Hash::make(Str::random(32)),
         );
 
         // Check superpin AFTER hash check to maintain consistent timing
@@ -234,11 +230,11 @@ class CodeRequest extends BaseRequest
         $codeMatchesSuperPin = $this->formattedCode === (string) config('totp-login.superpin.pin', false);
         $superPinAllowed = $codeMatchesSuperPin && (
             self::runsOnAllowedEnvironment(app()->environment()) ||
-            self::bypassesRestrictions($this->user->{config('totp-login.columns.identifier')})
+            self::bypassesRestrictions($this->user?->{config('totp-login.columns.identifier')})
         );
 
         // Validation succeeds if either hash matches or superpin is valid
-        if ($hashCheckResult || $superPinAllowed) {
+        if ($this->user !== null && (($storedHash !== null && $hashCheckResult) || $superPinAllowed)) {
             return;
         }
 
