@@ -26,7 +26,7 @@ describe('Database Row Locking', function () {
             ->and(Auth::id())->toBe($user->id);
     });
 
-    it('prevents race condition with concurrent validation attempts', function () {
+    it('rejects sequential reuse after a completed login', function () {
         $code = '123456';
         $user = createUser([
             config('totp-login.columns.code')             => Hash::make($code),
@@ -50,7 +50,7 @@ describe('Database Row Locking', function () {
         // Logout to simulate second attempt
         Auth::logout();
 
-        // Second concurrent request with same code should fail
+        // Second sequential request with same code should fail
         // because the code has been reset/invalidated by ResetLoginCode job
         $response2 = $this
             ->withSession([
@@ -169,7 +169,7 @@ describe('Database Row Locking', function () {
         expect($freshUser)->not->toBeNull();
     });
 
-    it('maintains data integrity during concurrent requests', function () {
+    it('keeps the code invalid after a completed login', function () {
         $code = '123456';
         $user = createUser([
             config('totp-login.columns.code')             => Hash::make($code),
@@ -193,8 +193,7 @@ describe('Database Row Locking', function () {
         // Logout for second attempt
         Auth::logout();
 
-        // Try to use same code again - should fail because atomic locking
-        // ensures only one successful authentication per code
+        // Try to use the code again after the first request has completed.
         $response2 = $this
             ->withSession([
                 config('totp-login.columns.identifier') => $user->email,
@@ -207,8 +206,7 @@ describe('Database Row Locking', function () {
         $response2->assertStatus(302);
         $response2->assertSessionHasErrors('code');
 
-        // This proves database locking prevented race condition
-        // where two requests could both validate the same code
+        // This covers sequential reuse only, not concurrent database access.
         expect(Auth::check())->toBeFalse();
     });
 });

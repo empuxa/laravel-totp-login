@@ -181,7 +181,7 @@ describe('Session Fixation Protection', function () {
             ->and(Auth::id())->toBe($user->id);
     });
 
-    it('handles concurrent login attempts safely', function () {
+    it('rejects sequential reuse with an old session identifier', function () {
         $code = '123456';
         $user = createUser([
             config('totp-login.columns.code')             => Hash::make($code),
@@ -203,11 +203,11 @@ describe('Session Fixation Protection', function () {
         $response1->assertStatus(302);
         expect(Auth::check())->toBeTrue();
 
-        // Logout to simulate second concurrent attempt
+        // Logout before the second sequential attempt
         Auth::logout();
         Session::flush();
 
-        // Second concurrent request with old session (should fail or be rate limited)
+        // Second sequential request with old session (should fail or be rate limited)
         Session::setId($sessionId1);
         Session::start();
         Session::put(config('totp-login.columns.identifier'), $user->email);
