@@ -14,6 +14,7 @@ describe('Session Fixation Protection', function () {
 
         // Store the original session ID
         Session::put(config('totp-login.columns.identifier'), $user->email);
+        Session::put('unrelated_value', 'preserved');
         $oldSessionId = Session::getId();
 
         // Attempt to log in
@@ -37,6 +38,7 @@ describe('Session Fixation Protection', function () {
         $newSessionId = Session::getId();
         expect($newSessionId)->not->toBe($oldSessionId)
             ->and($newSessionId)->not->toBeEmpty();
+        expect(session('unrelated_value'))->toBe('preserved');
     });
 
     it('session regeneration is called during successful authentication', function () {
