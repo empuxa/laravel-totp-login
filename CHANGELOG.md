@@ -4,6 +4,9 @@ All notable changes to `laravel-totp-login` will be documented in this file.
 
 ## Unreleased
 
+- Bind code-attempt limits to the resolved account, independent of identifier spelling.
+- Expire undelivered codes on synchronous notification failure so automatic retries work, while preserving newer codes.
+
 - Consume successful codes within the validation transaction and persist replacement codes before sending them.
 - Limit successful requests and resends per account/IP; return neutral account and code responses.
 - Reuse resolved users, derive default validation from code length and allow the exact configured number of attempts.

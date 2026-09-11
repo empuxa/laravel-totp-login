@@ -7,6 +7,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Throwable;
 
 class CreateAndSendLoginCode
 {
@@ -70,7 +71,24 @@ class CreateAndSendLoginCode
             if ($result !== null) {
                 [$user, $code] = $result;
                 $notification = config('totp-login.notification');
-                $user->notify(new $notification($code, $this->ip));
+                $columns = config('totp-login.columns');
+                $issuedHash = $user->getRawOriginal($columns['code']);
+                $issuedId = $user->getKey();
+                try {
+                    $user->notify(new $notification($code, $this->ip));
+                } catch (Throwable $exception) {
+                    // Compare and expire in one update: never invalidate a newer
+                    // code that another writer stored while this send was pending.
+                    $expiredAt = now()->subMinute();
+                    $updated = $user->newQuery()->whereKey($issuedId)
+                        ->where($columns['code'], $issuedHash)
+                        ->update([$columns['code_valid_until'] => $expiredAt]);
+                    if ($updated > 0) {
+                        $this->user->{$columns['code_valid_until']} = $expiredAt;
+                    }
+
+                    throw $exception;
+                }
                 if ($throttled) {
                     Cache::put($key, true, max(1, (int) config('totp-login.identifier.resend_cooldown', 30)));
                 }

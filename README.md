@@ -374,7 +374,7 @@ will automatically use these custom event classes without any changes to your su
 
 The configured model's connection wraps code lookup, validation and consumption in one transaction. A successful code is expired before the transaction releases its row lock. The controller reuses the validated user. Session regeneration rotates the session ID and CSRF token; it does not erase unrelated session data.
 
-Code creation and reset are synchronous jobs, not queued jobs. Creation invoked inside an existing transaction is deferred until that transaction commits. Code storage commits before notification delivery; a failed delivery releases the send reservation so a later request can try again. Custom notifications may introduce their own queue semantics.
+Code creation and reset are synchronous jobs, not queued jobs. Creation invoked inside an existing transaction is deferred until that transaction commits. Code storage commits before notification delivery; a failed synchronous delivery expires only its own code and releases the send reservation, so automatic or manual retry can try again. A newer code written in the meantime is preserved. Custom notifications may introduce their own queue semantics.
 
 Neutral responses remove the direct account-existence signal, but are not a constant-time guarantee. Synchronous notification delivery, generating a dummy hash for missing codes, expiry handling and custom listeners can have different durations. Use the internal events for monitoring without exposing those distinctions to clients.
 
